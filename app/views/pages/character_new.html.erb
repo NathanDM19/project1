@@ -1,0 +1,20 @@
+<h2>Create Character</h2>
+
+<% if flash[:errors] %>
+  <strong>Please correct the following errors: </strong>
+  <ol>
+    <% flash[:errors].each do |e| %>
+      <li><%= e %></li>
+    <% end %>
+  </ol>
+<% end %>
+<%= form_for @character do |f| %>
+
+  <%= f.label :name %>
+  <%= f.text_field :name %>
+  <br>
+  <%= f.label :gold %>
+  <%= f.text_field :gold %>
+  <br>
+  <%= f.submit %>
+<% end %>

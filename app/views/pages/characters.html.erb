@@ -1,0 +1,8 @@
+<h1>Choose a Character</h1>
+<strong><%= flash[:error] %></strong>
+<br>
+<% @current_user.characters.each do |character| %>
+<%= link_to character.name, character_login_path(id: character.id) %>  <br>
+<% end %>
+<br>
+<%= link_to "Create new character", character_new_path %>

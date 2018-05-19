@@ -1,0 +1,14 @@
+<p>Name: <%= @current_user.name %></p>
+<p>Email: <%= @current_user.email %></p>
+<p>Age: <%= @current_user.age %></p>
+<br>
+<p>Characters:</p>
+<% @current_user.characters.each do |character| %>
+<p><%= character.name %>, Owns:
+  <% character.items.each do |item| %>
+  <%= item.name %>
+  <% end %> <br> <br>
+<% end %>
+<p>
+<hr>
+<%= link_to "Edit profile", edit_user_path(@current_user) %>
