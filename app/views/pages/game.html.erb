@@ -17,6 +17,7 @@
       }
     };
     let currentCharacter = <%= @current_character.id %>
+    let health = 100;
     let speed = 5;
     let xPos = 0;
     let yPos = 0;
@@ -24,9 +25,12 @@
     let yPosTemp = 0;
     let direction = 'turn'
     let directionTemp;
-    let playerDetails = {}
-    let playerCreated = {}
-    let playerSprites = {}
+    let playerDetails = {};
+    let playerCreated = {};;
+    let playerSprites = {};
+    let playerNames = {};
+    let playerHealthBarBack = {};
+    let playerHealthBar = {};
     var objects = {};
     let gameEdit
     let game = new Phaser.Game(config);
@@ -35,35 +39,32 @@
       //Loading the images in
       this.load.spritesheet('dude', 'assets/dude3.png', { frameWidth: 32, frameHeight: 42 });
       this.load.image('platform', 'assets/platform.png');
-      this.load.image('platform1', 'assets/platform1.png')
-      this.load.image('platform2', 'assets/platform2.png')
-      this.load.image('platform3', 'assets/platform3.png')
-      this.load.image('platform4', 'assets/platform4.png')
-      this.load.image('platform5', 'assets/platform5.png')
-      this.load.image('platform6', 'assets/platform6.png')
-
-
       this.load.image('background', 'assets/background.png')
+      this.load.image('backgroundTop', 'assets/backgroundtop.png')
+      this.load.image('backgroundLeft', 'assets/backgroundleft.png')
+      this.load.image('healthBar', 'assets/healthbar.png')
+      this.load.image('healthBarBack', 'assets/healthbarback.png')
     }
     function create() {
       gameEdit = this
 
       //Loading the sky background and the character
       platforms = this.physics.add.staticGroup();
-      platforms.create(200, 184, 'platform')
-      platforms.create(200, 262, 'platform1')
-      platforms.create(290, 277, 'platform2')
-      platforms.create(313, 290, 'platform3')
-      platforms.create(351, 308, 'platform4')
-      platforms.create(175, 563, 'platform')
       platforms.create(-80, 275, 'platform')
-      platforms.create(4, 450, 'platform5')
-      platforms.create(20, 290, 'platform6')
-      this.add.image(800, 1000, 'background')
+      platforms.create(190, 260, 'platform').setScale(0.36,1).refreshBody()
+      platforms.create(165, 552, 'platform')
+      platforms.create(-5, 450, 'platform').setScale(0.1, 20).refreshBody()
+      platforms.create(280, 272, 'platform').setScale(0.08, 1).refreshBody()
+      platforms.create(303, 290, 'platform').setScale(0.03, 1).refreshBody()
+      platforms.create(20, 287, 'platform').setScale(0.05, 0.9).refreshBody()
+      platforms.create(340, 306, 'platform').setScale(0.1, 1).refreshBody()
+      platforms.create(200, 184, 'platform').setScale(2.2, 1).refreshBody()
+      this.add.image(775, 975, 'background')
+      this.add.image(320, -120, 'backgroundTop')
+      this.add.image(-320, 360, 'backgroundLeft')
       //Making a platforms class to add platforms.create(x, y, name)
       // platforms.create(400, 568, 'platform').setScale(2).refreshBody(); // setScale for size, need refreshBody after?
       player = this.physics.add.sprite(400, 490, 'dude')//.setScrollFactor(0);
-
       //Adding collision to end of screen
       // player.setCollideWorldBounds(true);
 
@@ -92,6 +93,10 @@
       // Follows player // Need to add so player is lower on screen
       // this.cameras.main.setSize(800, 600);
       this.cameras.main.startFollow(player);
+      playerNameText = this.add.text(200, 200, `<%= @current_character.name %>`, { fontSize: '12px', fill: '#FFF' });
+      healthBarBack = this.add.image(200, 200, 'healthBarBack')
+      healthBar = this.add.image(200, 200, 'healthBar')
+
     }
 
     function update() {
@@ -102,26 +107,44 @@
         if (parseInt(key) !== currentCharacter) {
           if (!playerCreated[key]) {
             playerSprites[`player${key}`] = gameEdit.physics.add.sprite(400, 490, 'dude');
-            console.log("created" + key)
+            playerNames[`player${key}`] = gameEdit.add.text(100, 100, `${playerDetails[key]['name']}`, {fontSize: '12px', fill: '#FFF'});
+            playerHealthBarBack[`player${key}`] = gameEdit.add.image(200, 200, 'healthBarBack');
+            playerHealthBar[`player${key}`] = gameEdit.add.image(200, 200, 'healthBar');
+            // console.log(playerDetails[key][name])
             gameEdit.physics.add.collider(playerSprites[`player${key}`], platforms);
             // console.log(playerDetails[`${key}Created`])
             playerCreated[key] = true
           }
-          if (playerSprites[`player${key}`].x !== playerDetails[key]['xPos'] || playerSprites[`player${key}`].y !== playerDetails[key]['yPos']) {
-            playerSprites[`player${key}`].x = playerDetails[key]['xPos']
-            playerSprites[`player${key}`].y = playerDetails[key]['yPos']
-            playerSprites[`player${key}`].anims.play(playerDetails[key]['direction'], true)
+          if (playerSprites[`player${key}`].x !== playerDetails[key]['xPos'] || playerSprites[`player${key}`].y !== playerDetails[key]['yPos'] || playerDetails[key]['xPos'] - ((100-playerDetails[key]['health'])/4) !== playerHealthBar[`player${key}`].x) {
+            playerSprites[`player${key}`].x = playerDetails[key]['xPos'];
+            playerSprites[`player${key}`].y = playerDetails[key]['yPos'];
+            playerSprites[`player${key}`].anims.play(playerDetails[key]['direction'], true);
+            playerNames[`player${key}`].x = playerDetails[key]['xPos'] - 27;
+            playerNames[`player${key}`].y = playerDetails[key]['yPos'] - 57;
+            playerHealthBarBack[`player${key}`].x = playerDetails[key]['xPos'];
+            playerHealthBarBack[`player${key}`].y = playerDetails[key]['yPos'] - 36;
+            playerHealthBar[`player${key}`].setScale(playerDetails[key]['health']/100, 1);
+            playerHealthBar[`player${key}`].x = playerDetails[key]['xPos'] - ((100-playerDetails[key]['health'])/4);
+            playerHealthBar[`player${key}`].y = playerDetails[key]['yPos'] - 36;
           }
         }
       }
       // console.log(playerDetails)
       xPos = player.x
       yPos = player.y
-      if (xPos !== xPosTemp || yPos !== yPosTemp || direction !== directionTemp) {
-        App.item.create(gold, currentCharacter, xPos, yPos, direction)
+      playerNameText.x = player.x - 27
+      playerNameText.y = player.y - 57
+      healthBarBack.x = player.x
+      healthBarBack.y = player.y - 36
+      healthBar.setScale(health/100, 1)
+      healthBar.x = player.x - ((100-health)/4)
+      healthBar.y = player.y - 36
+      if (xPos !== xPosTemp || yPos !== yPosTemp || direction !== directionTemp || health !== healthTemp) {
+        App.item.create(gold, currentCharacter, xPos, yPos, direction, health)
         xPosTemp = xPos
         yPosTemp = yPos
         directionTemp = direction
+        healthTemp = health
       }
       // if (cursors.left.isUp) {
       //   player.setVelocityX(0)
