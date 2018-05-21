@@ -14,4 +14,7 @@ Rails.application.routes.draw do
   get "/character/login" => "pages#character_login"
   get "/character/new"   => "pages#character_new"
   post "/characters"     => "pages#character_create"
+  get "/test"            => "pages#test"
+
+  mount ActionCable.server => '/cable'
 end

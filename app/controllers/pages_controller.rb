@@ -24,7 +24,7 @@ class PagesController < ApplicationController
   end
 
   def character_login
-    @current_character = Character.find_by id: params[:id]
+    $current_character = Character.find_by id: params[:id]
     session[:character_id] = params[:id]
     redirect_to game_path
   end
@@ -33,6 +33,9 @@ class PagesController < ApplicationController
     @gold = @current_character.gold
   end
 
+  def test
+    @items = Item.all
+  end
 
   private
 
