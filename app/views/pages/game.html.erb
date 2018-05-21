@@ -33,21 +33,36 @@
     let gold = <%= @current_character.gold %>
     function preload() {
       //Loading the images in
-      this.load.spritesheet('dude', 'assets/dude.png', { frameWidth: 32, frameHeight: 48 });
+      this.load.spritesheet('dude', 'assets/dude3.png', { frameWidth: 32, frameHeight: 42 });
       this.load.image('platform', 'assets/platform.png');
-      this.load.image('sky', 'assets/sky.png')
+      this.load.image('platform1', 'assets/platform1.png')
+      this.load.image('platform2', 'assets/platform2.png')
+      this.load.image('platform3', 'assets/platform3.png')
+      this.load.image('platform4', 'assets/platform4.png')
+      this.load.image('platform5', 'assets/platform5.png')
+      this.load.image('platform6', 'assets/platform6.png')
+
+
+      this.load.image('background', 'assets/background.png')
     }
     function create() {
       gameEdit = this
 
       //Loading the sky background and the character
-      this.add.image(400, 300, 'sky');
-      this.add.image(1200,300, 'sky')
-      player = this.physics.add.sprite(400, 490, 'dude')//.setScrollFactor(0);
-      //Making a platforms class to add platforms.create(x, y, name)
       platforms = this.physics.add.staticGroup();
-      platforms.create(600, 400, 'platform')
-      platforms.create(400, 568, 'platform').setScale(2).refreshBody(); // setScale for size, need refreshBody after?
+      platforms.create(200, 184, 'platform')
+      platforms.create(200, 262, 'platform1')
+      platforms.create(290, 277, 'platform2')
+      platforms.create(313, 290, 'platform3')
+      platforms.create(351, 308, 'platform4')
+      platforms.create(175, 563, 'platform')
+      platforms.create(-80, 275, 'platform')
+      platforms.create(4, 450, 'platform5')
+      platforms.create(20, 290, 'platform6')
+      this.add.image(800, 1000, 'background')
+      //Making a platforms class to add platforms.create(x, y, name)
+      // platforms.create(400, 568, 'platform').setScale(2).refreshBody(); // setScale for size, need refreshBody after?
+      player = this.physics.add.sprite(400, 490, 'dude')//.setScrollFactor(0);
 
       //Adding collision to end of screen
       // player.setCollideWorldBounds(true);
@@ -77,7 +92,6 @@
       // Follows player // Need to add so player is lower on screen
       // this.cameras.main.setSize(800, 600);
       this.cameras.main.startFollow(player);
-      goldText = this.add.text(16, 16, `Gold: ${gold}`, { fontSize: '32px', fill: '#000' });
     }
 
     function update() {
@@ -123,8 +137,6 @@
         player.setVelocityX(160)
         direction = 'right'
         player.anims.play('right', true);
-        // gold++;
-        // goldText.setText(`Gold: ${gold}`)
       }
       if (cursors.up.isDown)
       {
