@@ -10,14 +10,16 @@ class EnemyChannel < ApplicationCable::Channel
 
   def create(data)
     if data['enemyDamage'] == -100
-      a = Enemy.new
-      a.x = data['x']
-      a.y = data['y']
-      a.health = 100
-      a.total = 1
-      a.save
+      Enemy.create id:data['enemyId'], x:data['x'], y:data['y'], health:100, total:1
+      # a = Enemy.new
+      # a.x = data['x']
+      # a.y = data['y']
+      # a.health = 100
+      # a.total = 1
+      # a.save
+
     elsif data['enemyDamage'] == 9000
-      ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: 0, x: data['x'], y: data['y']
+      ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: data['x'], y: data['y']
     elsif data['enemyId'].to_i > 1 && data['enemyDamage'] > 0
       a = Enemy.find data['enemyId']
       a.health = a.health.to_i - data['enemyDamage'].to_i

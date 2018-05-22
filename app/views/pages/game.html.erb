@@ -135,9 +135,12 @@
       }
       // console.log(aliveEnemy, aliveEnemyX, aliveEnemyY, aliveEnemyId)
       if (aliveEnemy > 0) {
-        // console.log("RAN")
         // console.log(aliveEnemyId, aliveEnemyX, aliveEnemyY)
+
         App.enemy.create(aliveEnemyId, 9000, aliveEnemyX, aliveEnemyY)
+        // enemyCounter += 1;
+      } else {
+        App.enemy.create(enemyId, 0, 0, 0)
       }
       // console.log(player)
       // game.debug.body(player);
@@ -157,10 +160,10 @@
         enemy[key]['healthBar'].x = enemy[key]['enemy'].x - ((100-enemy[key]['health'])/4)
         enemy[key]['healthBar'].y = enemy[key]['enemy'].y - 36
         if (enemy[key]['health'] <= 0 && enemy[key]['enemy']['active']) {
+          // console.log("RAN")
           enemy[key]['enemy'].disableBody(true, true)
           enemy[key]['healthBar'].setScale(0)
           enemy[key]['healthBarBack'].setScale(0)
-          enemyCounter -=1
         }
         else if (enemy[key]['health'] <= 0 && !enemy[key]['enemy']['active']) {
           enemy[key]['healthBar'].setScale(0)
