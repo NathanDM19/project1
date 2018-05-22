@@ -10,37 +10,40 @@ App.item = App.cable.subscriptions.create('ItemChannel', {
     }
     if (enemyCounter === 0) {
       enemyCounter += 1
+      createEnemy(data['x'], data['y'])
     // console.log("ola")
-      createEnemy()
+      // createEnemy()
     }
     function createEnemy(x, y) {
+      console.log(`Creating enemy at ${x}, ${y}`)
       tempEnemyId = enemyId.toString()
-      if (singleEnemy) {
-        enemy[tempEnemyId] = {}
-        enemy[tempEnemyId]['enemy'] = gameEdit.physics.add.sprite(100, 700, 'undead')
-        enemy[tempEnemyId]['position'] = {}
-        enemy[tempEnemyId]['position']['x'] = 100
-        enemy[tempEnemyId]['position']['y'] = 700
-        enemy[tempEnemyId]['healthBarBack'] = gameEdit.add.image(200, 200, 'healthBarBack')
-        enemy[tempEnemyId]['healthBar'] = gameEdit.add.image(200, 200, 'healthBar')
-        enemy[tempEnemyId]['healthBarBack'].x = enemy[tempEnemyId]['enemy'].x
-        enemy[tempEnemyId]['healthBarBack'].y = enemy[tempEnemyId]['enemy'].y - 36
-        enemy[tempEnemyId]['healthBar'].x = enemy[tempEnemyId]['enemy'].x
-        enemy[tempEnemyId]['healthBar'].y = enemy[tempEnemyId]['enemy'].y - 36
-        enemy[tempEnemyId]['health'] = 100
-        enemy[tempEnemyId]['attack'] = function() {
-              if (cursors.space.isDown) {
-                spacePressed = true
-              }
-              if (cursors.space.isUp && spacePressed) {
-                spacePressed = false;
-                enemyDamage = 10
-                runCreate(tempEnemyId, enemyDamage)
-              }
-            }
-        gameEdit.physics.add.collider(player, enemy[tempEnemyId]['enemy'], enemy[tempEnemyId]['attack'])
-        enemyId += 1
+      // console.log("RAN", tempEnemyId)
+      enemy[tempEnemyId] = {}
+      enemy[tempEnemyId]['enemy'] = gameEdit.physics.add.sprite(x, y, 'undead')
+      enemy[tempEnemyId]['position'] = {}
+      enemy[tempEnemyId]['position']['x'] = x
+      enemy[tempEnemyId]['position']['y'] = y
+      // enemy[tempEnemyId]['name'] = gameEdit.add.text(x - 30, y, `${tempEnemyId}`)
+      enemy[tempEnemyId]['healthBarBack'] = gameEdit.add.image(200, 200, 'healthBarBack')
+      enemy[tempEnemyId]['healthBar'] = gameEdit.add.image(200, 200, 'healthBar')
+      enemy[tempEnemyId]['healthBarBack'].x = enemy[tempEnemyId]['enemy'].x
+      enemy[tempEnemyId]['healthBarBack'].y = enemy[tempEnemyId]['enemy'].y - 36
+      enemy[tempEnemyId]['healthBar'].x = enemy[tempEnemyId]['enemy'].x
+      enemy[tempEnemyId]['healthBar'].y = enemy[tempEnemyId]['enemy'].y - 36
+      enemy[tempEnemyId]['health'] = 100
+      enemy[tempEnemyId]['attack'] = function() {
+        if (cursors.space.isDown) {
+          spacePressed = true
+        }
+        if (cursors.space.isUp && spacePressed) {
+          spacePressed = false;
+          enemyDamage = 10
+          runCreate(this.id, enemyDamage)
+        }
       }
+      enemy[tempEnemyId]['attack']['id'] = tempEnemyId
+      gameEdit.physics.add.collider(player, enemy[tempEnemyId]['enemy'], enemy[tempEnemyId]['attack'])
+      enemyId += 1
     }
 
     // if (enemyHealth <= 0) {

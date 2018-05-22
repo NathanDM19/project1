@@ -134,6 +134,13 @@
         enemy[key]['healthBarBack'].y = enemy[key]['enemy'].y - 36
         enemy[key]['healthBar'].x = enemy[key]['enemy'].x - ((100-enemy[key]['health'])/4)
         enemy[key]['healthBar'].y = enemy[key]['enemy'].y - 36
+        if (enemy[key]['health'] <= 0 && enemy[key]['enemy']['active']) {
+          enemy[key]['enemy'].disableBody(true, true)
+          enemy[key]['healthBar'].setScale(0)
+          enemy[key]['healthBarBack'].setScale(0)
+          enemyCounter -=1
+
+        }
       }
       for (let key in playerDetails) {
         if (parseInt(key) !== currentCharacter) {
