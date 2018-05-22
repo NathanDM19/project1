@@ -13,7 +13,7 @@ class ItemChannel < ApplicationCable::Channel
     # a.gold = data['gold'].to_i
     # a.save
     name = Character.find data['currentCharacter']
-    ActionCable.server.broadcast 'item_channel', gold: data['gold'], currentCharacter: data['currentCharacter'], xPos: data['xPos'], yPos: data['yPos'], direction: data['direction'], name: name.name, health: data['health'], tempEnemyId: data['tempEnemyId'], enemyDamage: data['enemyDamage'], x: (rand(200)+100), y: (rand(200)+500)
+    ActionCable.server.broadcast 'item_channel', gold: data['gold'], currentCharacter: data['currentCharacter'], xPos: data['xPos'], yPos: data['yPos'], direction: data['direction'], name: name.name, health: data['health']
   end
 
   def perform_action(data)

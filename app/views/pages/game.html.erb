@@ -20,8 +20,8 @@
     let singleEnemy = true;
     let spacePressed = false;
     let enemy = {}
-    let enemyCounter = 0;
-    let enemyId = <%= Enemy.first.total %>
+    let enemyCounter = 0
+    let enemyId = <%= Enemy.last.id + 1 %>
     // let enemyHealth = 100;
     let health = 100;
     let speed = 5;
@@ -31,6 +31,7 @@
     let yPosTemp = 0;
     let direction = 'turn'
     let directionTemp;
+    let player
     let playerDetails = {};
     let playerCreated = {};;
     let playerSprites = {};
@@ -52,9 +53,12 @@
       this.load.image('healthBar', 'assets/healthbar.png')
       this.load.image('healthBarBack', 'assets/healthbarback.png')
       this.load.spritesheet('undead', 'assets/enemies/undeadWalk.png', { frameWidth: 56, frameHeight: 48});
+      gameEdit = this
+      // console.log(gameEdit)
     }
     function create() {
-      gameEdit = this
+      // gameEdit = this
+      // console.log(this)
 
       //Loading the sky background and the character
       platforms = this.physics.add.staticGroup();
@@ -117,6 +121,24 @@
       playerNameText = this.add.text(200, 200, `<%= @current_character.name %>`, { fontSize: '12px', fill: '#FFF' });
       healthBarBack = this.add.image(200, 200, 'healthBarBack')
       healthBar = this.add.image(200, 200, 'healthBar')
+      let aliveEnemy = 0
+      let enemyObject = <%= Enemy.all.to_json.html_safe %>
+      // console.log(enemyObject)
+      for (let key in enemyObject) {
+        if (enemyObject[key]['total'] === 1) {
+
+          aliveEnemy += 1
+          aliveEnemyId = enemyObject[key]['id']
+          aliveEnemyX = enemyObject[key]['x']
+          aliveEnemyY = enemyObject[key]['y']
+        }
+      }
+      // console.log(aliveEnemy, aliveEnemyX, aliveEnemyY, aliveEnemyId)
+      if (aliveEnemy > 0) {
+        // console.log("RAN")
+        // console.log(aliveEnemyId, aliveEnemyX, aliveEnemyY)
+        App.enemy.create(aliveEnemyId, 9000, aliveEnemyX, aliveEnemyY)
+      }
       // console.log(player)
       // game.debug.body(player);
     }
@@ -190,9 +212,7 @@
       // enemy.x = 100
       // enemy.y = 700
       if (xPos !== xPosTemp || yPos !== yPosTemp || direction !== directionTemp || health !== healthTemp) {
-        tempEnemyId = '0'
-        enemyDamage = 0
-        App.item.create(gold, currentCharacter, xPos, yPos, direction, health, tempEnemyId, enemyDamage)
+        App.item.create(gold, currentCharacter, xPos, yPos, direction, health)
         xPosTemp = xPos
         yPosTemp = yPos
         directionTemp = direction
@@ -244,21 +264,14 @@
       if (cursors.space.isDown) {
         player.anims.play('punch')
       }
+      // App.enemy.create(0, 0, 0, 0)
     }
-    // function createEnemy(x, y) {
-    //   if (singleEnemy) {
-    //     enemy = gameEdit.physics.add.sprite(100, 700, 'undead')
-    //     enemyHealthBarBack = gameEdit.add.image(200, 200, 'healthBarBack')
-    //     enemyHealthBar = gameEdit.add.image(200, 200, 'healthBar')
-    //     enemyHealth = 100
-    //     enemyHealthBarBack.setScale(1)
-    //     enemy.enableBody(true, 0, 0, true, true)
-    //     gameEdit.physics.add.collider(player, enemy, attack)
-    //     singleEnemy = false;
-    //   }
-    // }
-    function runCreate(tempEnemyId, enemyDamage) {
-      App.item.create(gold, currentCharacter, xPos, yPos, direction, health, tempEnemyId, enemyDamage)
+
+    function runCreate(id, enemyDamage) {
+      App.enemy.create(id, enemyDamage, 0, 0)
+    }
+    function databaseEnemy(x, y) {
+      App.enemy.create(enemyId, -100, x, y)
     }
     function attack() {
       if (cursors.space.isDown) {
