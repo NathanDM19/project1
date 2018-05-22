@@ -19,8 +19,10 @@
     let currentCharacter = <%= @current_character.id %>
     let singleEnemy = true;
     let spacePressed = false;
-    let enemy;
-    let enemyHealth = 100;
+    let enemy = {}
+    let enemyCounter = 0;
+    let enemyId = <%= Enemy.first.total %>
+    // let enemyHealth = 100;
     let health = 100;
     let speed = 5;
     let xPos = 0;
@@ -117,7 +119,6 @@
       healthBar = this.add.image(200, 200, 'healthBar')
       // console.log(player)
       // game.debug.body(player);
-      createEnemy(100, 700)
     }
     function update() {
       // testing = testVar
@@ -126,6 +127,14 @@
       // if (enemyDetails['enemyHealth'] !== undefined) {
       //   enemyHealth = enemyDetails['enemyHealth']
       // }
+      for (let key in enemy) {
+        enemy[key]['enemy'].x = enemy[key]['position']['x']
+        enemy[key]['enemy'].y = enemy[key]['position']['y']
+        enemy[key]['healthBarBack'].x = enemy[key]['enemy'].x
+        enemy[key]['healthBarBack'].y = enemy[key]['enemy'].y - 36
+        enemy[key]['healthBar'].x = enemy[key]['enemy'].x - ((100-enemy[key]['health'])/4)
+        enemy[key]['healthBar'].y = enemy[key]['enemy'].y - 36
+      }
       for (let key in playerDetails) {
         if (parseInt(key) !== currentCharacter) {
           if (!playerCreated[key]) {
@@ -163,20 +172,22 @@
       healthBar.x = player.x - ((100-health)/4)
       healthBar.y = player.y - 36
 
-      enemyHealthBarBack.x = enemy.x
-      enemyHealthBarBack.y = enemy.y - 36
-      enemyHealthBar.setScale(enemyHealth/100, 1)
-      enemyHealthBar.x = enemy.x - ((100-enemyHealth)/4)
-      enemyHealthBar.y = enemy.y - 36
-      enemy.x = 100
-      enemy.y = 700
-      if (xPos !== xPosTemp || yPos !== yPosTemp || direction !== directionTemp || health !== healthTemp || enemyHealth !== enemyHealthTemp) {
-        App.item.create(gold, currentCharacter, xPos, yPos, direction, health, enemy, enemyHealth)
+
+      // enemyHealthBarBack.x = enemy.x
+      // enemyHealthBarBack.y = enemy.y - 36
+      // enemyHealthBar.setScale(enemyHealth/100, 1)
+      // enemyHealthBar.x = enemy.x - ((100-enemyHealth)/4)
+      // enemyHealthBar.y = enemy.y - 36
+      // enemy.x = 100
+      // enemy.y = 700
+      if (xPos !== xPosTemp || yPos !== yPosTemp || direction !== directionTemp || health !== healthTemp) {
+        tempEnemyId = '0'
+        enemyDamage = 0
+        App.item.create(gold, currentCharacter, xPos, yPos, direction, health, tempEnemyId, enemyDamage)
         xPosTemp = xPos
         yPosTemp = yPos
         directionTemp = direction
         healthTemp = health
-        enemyHealthTemp = enemyHealth
 
       }
       // PLAYER MOVEMENT
@@ -225,17 +236,20 @@
         player.anims.play('punch')
       }
     }
-    function createEnemy(x, y) {
-      if (singleEnemy) {
-        enemy = gameEdit.physics.add.sprite(100, 700, 'undead')
-        enemyHealthBarBack = gameEdit.add.image(200, 200, 'healthBarBack')
-        enemyHealthBar = gameEdit.add.image(200, 200, 'healthBar')
-        enemyHealth = 100
-        enemyHealthBarBack.setScale(1)
-        enemy.enableBody(true, 0, 0, true, true)
-        gameEdit.physics.add.collider(player, enemy, attack)
-        singleEnemy = false;
-      }
+    // function createEnemy(x, y) {
+    //   if (singleEnemy) {
+    //     enemy = gameEdit.physics.add.sprite(100, 700, 'undead')
+    //     enemyHealthBarBack = gameEdit.add.image(200, 200, 'healthBarBack')
+    //     enemyHealthBar = gameEdit.add.image(200, 200, 'healthBar')
+    //     enemyHealth = 100
+    //     enemyHealthBarBack.setScale(1)
+    //     enemy.enableBody(true, 0, 0, true, true)
+    //     gameEdit.physics.add.collider(player, enemy, attack)
+    //     singleEnemy = false;
+    //   }
+    // }
+    function runCreate(tempEnemyId, enemyDamage) {
+      App.item.create(gold, currentCharacter, xPos, yPos, direction, health, tempEnemyId, enemyDamage)
     }
     function attack() {
       if (cursors.space.isDown) {
@@ -243,7 +257,7 @@
       }
       if (cursors.space.isUp && spacePressed) {
         spacePressed = false;
-        enemyHealth -= 10
+        // enemyHealth -= 10
       }
     }
 </script>
