@@ -17,6 +17,10 @@
       }
     };
     let currentCharacter = <%= @current_character.id %>
+    let singleEnemy = true;
+    let spacePressed = false;
+    let enemy;
+    let enemyHealth = 100;
     let health = 100;
     let speed = 5;
     let xPos = 0;
@@ -37,34 +41,44 @@
     let gold = <%= @current_character.gold %>
     function preload() {
       //Loading the images in
-      this.load.spritesheet('dude', 'assets/dude3.png', { frameWidth: 32, frameHeight: 42 });
+      this.load.spritesheet('player', 'assets/player.png', { frameWidth: 64, frameHeight: 64 });
       this.load.image('platform', 'assets/platform.png');
       this.load.image('background', 'assets/background.png')
       this.load.image('backgroundTop', 'assets/backgroundtop.png')
+      this.load.image('backgroundTop2', 'assets/backgroundtop2.png')
       this.load.image('backgroundLeft', 'assets/backgroundleft.png')
       this.load.image('healthBar', 'assets/healthbar.png')
       this.load.image('healthBarBack', 'assets/healthbarback.png')
+      this.load.spritesheet('undead', 'assets/enemies/undeadWalk.png', { frameWidth: 56, frameHeight: 48});
     }
     function create() {
       gameEdit = this
 
       //Loading the sky background and the character
       platforms = this.physics.add.staticGroup();
-      platforms.create(-80, 275, 'platform')
-      platforms.create(190, 260, 'platform').setScale(0.36,1).refreshBody()
-      platforms.create(165, 552, 'platform')
+      platforms.create(-83, 260, 'platform').setScale(1, 0.1).refreshBody()
+      platforms.create(198, 246, 'platform').setScale(0.36, 0.1).refreshBody()
+      platforms.create(595, 309, 'platform').setScale(0.28, 0.1).refreshBody()
+      platforms.create(172, 550, 'platform').setScale(1, 0.1).refreshBody()
       platforms.create(-5, 450, 'platform').setScale(0.1, 20).refreshBody()
-      platforms.create(280, 272, 'platform').setScale(0.08, 1).refreshBody()
-      platforms.create(303, 290, 'platform').setScale(0.03, 1).refreshBody()
-      platforms.create(20, 287, 'platform').setScale(0.05, 0.9).refreshBody()
-      platforms.create(340, 306, 'platform').setScale(0.1, 1).refreshBody()
-      platforms.create(200, 184, 'platform').setScale(2.2, 1).refreshBody()
-      this.add.image(775, 975, 'background')
+      platforms.create(290, 261, 'platform').setScale(0.08, 0.1).refreshBody()
+      platforms.create(314, 277, 'platform').setScale(0.03, 0.1).refreshBody()
+      platforms.create(18, 274, 'platform').setScale(0.05, 0.1).refreshBody()
+      platforms.create(352, 294, 'platform').setScale(0.1, 0.1).refreshBody()
+      platforms.create(200, 165, 'platform').setScale(7, 0.1).refreshBody()
+      platforms.create(483, 296, 'platform').setScale(0.2, 0.1).refreshBody()
+      platforms.create(654, 250, 'platform').setScale(0.01, 3).refreshBody()
+      platforms.create(574, 550, 'platform').setScale(0.65, 0.1).refreshBody()
+      platforms.create(1130, 195, 'platform').setScale(2.33, 0.11).refreshBody()
+      this.add.image(800, 1000, 'background')
       this.add.image(320, -120, 'backgroundTop')
+      this.add.image(1120, -120, 'backgroundTop2')
       this.add.image(-320, 360, 'backgroundLeft')
       //Making a platforms class to add platforms.create(x, y, name)
       // platforms.create(400, 568, 'platform').setScale(2).refreshBody(); // setScale for size, need refreshBody after?
-      player = this.physics.add.sprite(400, 490, 'dude')//.setScrollFactor(0);
+      player = this.physics.add.sprite(400, 490, 'player');  //.setScrollFactor(0);
+      player.body.setSize(24, 42)
+      // enemy = this.physics.add.sprite(100, 700, 'undead') //DEFAULT is 3. WALK 5-12 ISH
       //Adding collision to end of screen
       // player.setCollideWorldBounds(true);
 
@@ -73,21 +87,26 @@
       // Animation for sprite
       this.anims.create({
           key: 'left',
-          frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
+          frames: this.anims.generateFrameNumbers('player', { start: 29 , end: 31 }),
           frameRate: 10,
           repeat: -1
       });
       this.anims.create({
           key: 'turn',
-          frames: [ { key: 'dude', frame: 4 } ],
+          frames: [ { key: 'player', frame: 0 } ],
           frameRate: 20
       });
       this.anims.create({
           key: 'right',
-          frames: this.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
+          frames: this.anims.generateFrameNumbers('player', { start: 29, end: 31 }),
           frameRate: 10,
           repeat: -1
       });
+      this.anims.create({
+          key: 'punch',
+          frames: [ { key: 'player', frame: 39} ],
+          frameRate: 20
+      })
       // Adding keyboard functionality
       cursors = this.input.keyboard.createCursorKeys();
       // Follows player // Need to add so player is lower on screen
@@ -96,17 +115,21 @@
       playerNameText = this.add.text(200, 200, `<%= @current_character.name %>`, { fontSize: '12px', fill: '#FFF' });
       healthBarBack = this.add.image(200, 200, 'healthBarBack')
       healthBar = this.add.image(200, 200, 'healthBar')
-
+      // console.log(player)
+      // game.debug.body(player);
+      createEnemy(100, 700)
     }
-
     function update() {
       // testing = testVar
       // Things that will happen after game initially loads
       // Movement for player
+      // if (enemyDetails['enemyHealth'] !== undefined) {
+      //   enemyHealth = enemyDetails['enemyHealth']
+      // }
       for (let key in playerDetails) {
         if (parseInt(key) !== currentCharacter) {
           if (!playerCreated[key]) {
-            playerSprites[`player${key}`] = gameEdit.physics.add.sprite(400, 490, 'dude');
+            playerSprites[`player${key}`] = gameEdit.physics.add.sprite(400, 490, 'player');
             playerNames[`player${key}`] = gameEdit.add.text(100, 100, `${playerDetails[key]['name']}`, {fontSize: '12px', fill: '#FFF'});
             playerHealthBarBack[`player${key}`] = gameEdit.add.image(200, 200, 'healthBarBack');
             playerHealthBar[`player${key}`] = gameEdit.add.image(200, 200, 'healthBar');
@@ -139,27 +162,36 @@
       healthBar.setScale(health/100, 1)
       healthBar.x = player.x - ((100-health)/4)
       healthBar.y = player.y - 36
-      if (xPos !== xPosTemp || yPos !== yPosTemp || direction !== directionTemp || health !== healthTemp) {
-        App.item.create(gold, currentCharacter, xPos, yPos, direction, health)
+
+      enemyHealthBarBack.x = enemy.x
+      enemyHealthBarBack.y = enemy.y - 36
+      enemyHealthBar.setScale(enemyHealth/100, 1)
+      enemyHealthBar.x = enemy.x - ((100-enemyHealth)/4)
+      enemyHealthBar.y = enemy.y - 36
+      enemy.x = 100
+      enemy.y = 700
+      if (xPos !== xPosTemp || yPos !== yPosTemp || direction !== directionTemp || health !== healthTemp || enemyHealth !== enemyHealthTemp) {
+        App.item.create(gold, currentCharacter, xPos, yPos, direction, health, enemy, enemyHealth)
         xPosTemp = xPos
         yPosTemp = yPos
         directionTemp = direction
         healthTemp = health
+        enemyHealthTemp = enemyHealth
+
       }
-      // if (cursors.left.isUp) {
-      //   player.setVelocityX(0)
-      //   direction = 'turn'
-      // }
+      // PLAYER MOVEMENT
       if (cursors.left.isDown) {
-        player.setVelocityX(-160)
-        direction = 'left'
+        player.setVelocityX(-160);
+        direction = 'left';
         player.anims.play('left', true);
+        player.flipX = true;
       }
       if (cursors.right.isDown)
       {
         player.setVelocityX(160)
-        direction = 'right'
+        direction = 'right';
         player.anims.play('right', true);
+        player.flipX = false;
       }
       if (cursors.up.isDown)
       {
@@ -188,10 +220,30 @@
         }
         player.setVelocityY(0)
       }
-
-      if (cursors.up.isDown && player.body.touching.down)
-      {
-          player.setVelocityY(-330);
+      // BASIC ATTACK
+      if (cursors.space.isDown) {
+        player.anims.play('punch')
+      }
+    }
+    function createEnemy(x, y) {
+      if (singleEnemy) {
+        enemy = gameEdit.physics.add.sprite(100, 700, 'undead')
+        enemyHealthBarBack = gameEdit.add.image(200, 200, 'healthBarBack')
+        enemyHealthBar = gameEdit.add.image(200, 200, 'healthBar')
+        enemyHealth = 100
+        enemyHealthBarBack.setScale(1)
+        enemy.enableBody(true, 0, 0, true, true)
+        gameEdit.physics.add.collider(player, enemy, attack)
+        singleEnemy = false;
+      }
+    }
+    function attack() {
+      if (cursors.space.isDown) {
+        spacePressed = true
+      }
+      if (cursors.space.isUp && spacePressed) {
+        spacePressed = false;
+        enemyHealth -= 10
       }
     }
 </script>
