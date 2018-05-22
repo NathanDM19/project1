@@ -29,12 +29,12 @@ class EnemyChannel < ApplicationCable::Channel
       end
       # puts a.health
       a.save
-      x = rand(200)+100
-      y = rand(200)+500
+      x = rand(95)+50
+      y = rand(100)+600
       ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: x, y: y
     else
-      x = rand(200)+100
-      y = rand(200)+500
+      x = rand(95)+50
+      y = rand(100)+600
       ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: x, y: y
     end
   end

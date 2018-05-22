@@ -17,7 +17,6 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
       createEnemy(data['x'], data['y'])
     } else if (data['enemyDamage'] === 9000) {
       enemyCounter += 1
-      tempEnemyId = enemyId
       createEnemy(data['x'], data['y'], data['enemyId'])
       enemyId -= 1
     }
@@ -49,6 +48,7 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
           if (cursors.space.isUp && spacePressed) {
             spacePressed = false;
             enemyDamage = 10
+            console.log(this.id)
             runCreate(this.id, enemyDamage)
           }
         }

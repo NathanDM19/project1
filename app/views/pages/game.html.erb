@@ -136,7 +136,6 @@
       // console.log(aliveEnemy, aliveEnemyX, aliveEnemyY, aliveEnemyId)
       if (aliveEnemy > 0) {
         // console.log(aliveEnemyId, aliveEnemyX, aliveEnemyY)
-
         App.enemy.create(aliveEnemyId, 9000, aliveEnemyX, aliveEnemyY)
         // enemyCounter += 1;
       } else {
@@ -285,6 +284,9 @@
         // enemyHealth -= 10
       }
     }
+    window.setInterval(function() {
+      App.item.create(gold, currentCharacter, xPos, yPos, direction, health)
+    }, 1000)
 </script>
 
 
