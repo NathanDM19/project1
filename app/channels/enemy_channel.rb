@@ -22,16 +22,18 @@ class EnemyChannel < ApplicationCable::Channel
       ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: data['x'], y: data['y']
     elsif data['enemyId'].to_i > 1 && data['enemyDamage'] > 0
       a = Enemy.find data['enemyId']
-      a.health = a.health.to_i - data['enemyDamage'].to_i
-      # puts a.health
-      if a.health.to_i <= 0
-        a.total = 0
+      if a.total == 1
+        a.health = a.health.to_i - data['enemyDamage'].to_i
+        # puts a.health
+        if a.health.to_i <= 0
+          a.total = 0
+        end
+        # puts a.health
+        a.save
+        x = rand(95)+50
+        y = rand(100)+600
+        ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: x, y: y
       end
-      # puts a.health
-      a.save
-      x = rand(95)+50
-      y = rand(100)+600
-      ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: x, y: y
     else
       x = rand(95)+50
       y = rand(100)+600
