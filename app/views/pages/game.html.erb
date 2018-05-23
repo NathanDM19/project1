@@ -29,7 +29,7 @@ body {
     let enemy = {}
     let enemyCounter = 0
     let enemyId = <%= Enemy.last.id + 1 %>
-    // let enemyHealth = 100;
+    let enemies = 4
     let health = 100;
     let speed = 5;
     let xPos = 0;
@@ -50,6 +50,8 @@ body {
     let gameEdit
     let game = new Phaser.Game(config);
     let gold = <%= @current_character.gold %>
+    // Quest variables
+    let quests = {}
     function preload() {
       //Loading the images in
       this.load.spritesheet('player', 'assets/player.png', { frameWidth: 64, frameHeight: 64 });
@@ -61,15 +63,14 @@ body {
       this.load.image('healthBar', 'assets/healthbar.png')
       this.load.image('healthBarBack', 'assets/healthbarback.png')
       this.load.spritesheet('undead', 'assets/enemies/undeadWalk.png', { frameWidth: 56, frameHeight: 48});
+      this.load.image('questIcon', 'assets/questIcon.png');
       gameEdit = this
       // console.log(gameEdit)
     }
     function create() {
-      // gameEdit = this
-      // console.log(this)
-
       //Loading the sky background and the character
       platforms = this.physics.add.staticGroup();
+      quest1 = this.physics.add.staticGroup();
       platforms.create(-83, 260, 'platform').setScale(1, 0.1).refreshBody()
       platforms.create(198, 246, 'platform').setScale(0.36, 0.1).refreshBody()
       platforms.create(595, 309, 'platform').setScale(0.28, 0.1).refreshBody()
@@ -90,16 +91,18 @@ body {
       this.add.image(320, -120, 'backgroundTop')
       this.add.image(1120, -120, 'backgroundTop2')
       this.add.image(-320, 360, 'backgroundLeft')
+      quest1.create(460, 420, 'questIcon')
+      quests['1'] = {1: 0, 2: 0}
+      quests['1']['text'] = gameEdit.add.text(400, 380, `quest text`, { fontSize: '32px', fill: '#FFF' });
+
       //Making a platforms class to add platforms.create(x, y, name)
-      // platforms.create(400, 568, 'platform').setScale(2).refreshBody(); // setScale for size, need refreshBody after?
       player = this.physics.add.sprite(400, 490, 'player');  //.setScrollFactor(0);
       player.body.setSize(24, 42)
       // enemy = this.physics.add.sprite(100, 700, 'undead') //DEFAULT is 3. WALK 5-12 ISH
       //Adding collision to end of screen
-      // player.setCollideWorldBounds(true);
-
       // Collision between player and platforms
       this.physics.add.collider(player, platforms);
+      this.physics.add.overlap(player, quest1, quest1Touch, null, this);
       // Animation for sprite
       this.anims.create({
           key: 'left',
@@ -136,8 +139,6 @@ body {
       })
       // Adding keyboard functionality
       cursors = this.input.keyboard.createCursorKeys();
-      // Follows player // Need to add so player is lower on screen
-      // this.cameras.main.setSize(800, 600);
       this.cameras.main.startFollow(player);
       playerNameText = this.add.text(200, 200, `<%= @current_character.name %>`, { fontSize: '12px', fill: '#FFF' });
       healthBarBack = this.add.image(200, 200, 'healthBarBack')
@@ -147,79 +148,31 @@ body {
       aliveEnemy['undead3'] = 0
       aliveEnemy['undead4'] = 0
       let enemyObject = <%= Enemy.all.to_json.html_safe %>
-      // console.log(enemyObject)
       for (let key in enemyObject) {
-        if (enemyObject[key]['total'] === 1) {
-          aliveEnemy['undead1'] += 1
-          aliveEnemyId = enemyObject[key]['id']
-          aliveEnemyX = enemyObject[key]['x']
-          aliveEnemyY = enemyObject[key]['y']
-          console.log("loading enemy with" + aliveEnemyId)
-          App.enemy.create(aliveEnemyId, 1, aliveEnemyX, aliveEnemyY, 'login', currentCharacter)
-          enemyId -= 1
-        }
-        if (enemyObject[key]['total'] === 2) {
-          aliveEnemy['undead2'] += 1
-          aliveEnemyId = enemyObject[key]['id']
-          aliveEnemyX = enemyObject[key]['x']
-          aliveEnemyY = enemyObject[key]['y']
-          console.log("loading enemy with" + aliveEnemyId)
-          App.enemy.create(aliveEnemyId, 2, aliveEnemyX, aliveEnemyY, 'login', currentCharacter)
-          enemyId -= 1
-        }
-        if (enemyObject[key]['total'] === 3) {
-          aliveEnemy['undead3'] += 1
-          aliveEnemyId = enemyObject[key]['id']
-          aliveEnemyX = enemyObject[key]['x']
-          aliveEnemyY = enemyObject[key]['y']
-          console.log("loading enemy with" + aliveEnemyId)
-          App.enemy.create(aliveEnemyId, 3, aliveEnemyX, aliveEnemyY, 'login', currentCharacter)
-          enemyId -= 1
-        }
-        if (enemyObject[key]['total'] === 4) {
-          aliveEnemy['undead4'] += 1
-          aliveEnemyId = enemyObject[key]['id']
-          aliveEnemyX = enemyObject[key]['x']
-          aliveEnemyY = enemyObject[key]['y']
-          console.log("loading enemy with" + aliveEnemyId)
-          App.enemy.create(aliveEnemyId, 4, aliveEnemyX, aliveEnemyY, 'login', currentCharacter)
-          enemyId -= 1
+        for (let i = 1; i <= enemies; i++) {
+          if (enemyObject[key]['total'] === i) {
+            aliveEnemy[`undead${i}`] += 1
+            aliveEnemyId = enemyObject[key]['id']
+            aliveEnemyX = enemyObject[key]['x']
+            aliveEnemyY = enemyObject[key]['y']
+            console.log("loading enemy with" + aliveEnemyId)
+            App.enemy.create(aliveEnemyId, i, aliveEnemyX, aliveEnemyY, 'login', currentCharacter)
+            enemyId -= 1
+          }
         }
       }
-      if (aliveEnemy['undead1'] === 0) {
-        // console.log("Creating undead1 with id" + enemyId)
-        aliveEnemy['undead1'] += 1
-        App.enemy.create(enemyId, 1, 0, 0, 'create', currentCharacter)
+      for (let i = 1; i <= enemies; i++) {
+        if (aliveEnemy[`undead${i}`] === 0) {
+          console.log("Creating undead1 with id" + enemyId)
+          aliveEnemy[`undead${i}`] += 1
+          App.enemy.create(enemyId, i, 0, 0, 'create', currentCharacter)
+        }
       }
-      if (aliveEnemy['undead2'] === 0) {
-        // console.log("Creating undead2 with id" + enemyId)
-        aliveEnemy['undead2'] += 1
-        App.enemy.create(enemyId, 2, 0, 0, 'create', currentCharacter)
-      }
-      if (aliveEnemy['undead3'] === 0) {
-        // console.log("Creating undead2 with id" + enemyId)
-        aliveEnemy['undead3'] += 1
-        App.enemy.create(enemyId, 3, 0, 0, 'create', currentCharacter)
-      }
-      if (aliveEnemy['undead4'] === 0) {
-        // console.log("Creating undead2 with id" + enemyId)
-        aliveEnemy['undead4'] += 1
-        App.enemy.create(enemyId, 4, 0, 0, 'create', currentCharacter)
-      }
-      // if (aliveEnemy['undead'] > 0) {
-      // } else {
-      //   App.enemy.create(enemyId, 0, 0, 0, 'create')
-      // }
-      // console.log(player)
-      // game.debug.body(player);
+
     }
     function update() {
-      // testing = testVar
       // Things that will happen after game initially loads
       // Movement for player
-      // if (enemyDetails['enemyHealth'] !== undefined) {
-      //   enemyHealth = enemyDetails['enemyHealth']
-      // }
       for (let key in playerDetails) {
         if (parseInt(key) !== currentCharacter) {
           if (!playerCreated[key]) {
@@ -227,14 +180,11 @@ body {
             playerNames[`player${key}`] = gameEdit.add.text(100, 100, `${playerDetails[key]['name']}`, {fontSize: '12px', fill: '#FFF'});
             playerHealthBarBack[`player${key}`] = gameEdit.add.image(200, 200, 'healthBarBack');
             playerHealthBar[`player${key}`] = gameEdit.add.image(200, 200, 'healthBar');
-            // console.log(playerDetails[key][name])
             gameEdit.physics.add.collider(playerSprites[`player${key}`], platforms);
-            // console.log(playerDetails[`${key}Created`])
             playerCreated[key] = true
           }
           if (playerSprites[`player${key}`].x !== playerDetails[key]['xPos'] || playerSprites[`player${key}`].y !== playerDetails[key]['yPos'] || playerDetails[key]['xPos'] - ((100-playerDetails[key]['health'])/4) !== playerHealthBar[`player${key}`].x || playerDetails[key]['direction'] !== playerDetails[key]['tempDirection']) {
             playerDetails[key]['tempDirection'] = playerDetails[key]['direction']
-            // console.log(playerDetails[key]['direction'])
             playerSprites[`player${key}`].x = playerDetails[key]['xPos'];
             playerSprites[`player${key}`].y = playerDetails[key]['yPos'];
             playerSprites[`player${key}`].anims.play(playerDetails[key]['direction'], true);
@@ -253,7 +203,6 @@ body {
           }
         }
       }
-      // console.log(playerDetails)
       xPos = player.x
       yPos = player.y
       playerNameText.x = player.x - 27
@@ -264,21 +213,12 @@ body {
       healthBar.x = player.x - ((100-health)/4)
       healthBar.y = player.y - 36
 
-
-      // enemyHealthBarBack.x = enemy.x
-      // enemyHealthBarBack.y = enemy.y - 36
-      // enemyHealthBar.setScale(enemyHealth/100, 1)
-      // enemyHealthBar.x = enemy.x - ((100-enemyHealth)/4)
-      // enemyHealthBar.y = enemy.y - 36
-      // enemy.x = 100
-      // enemy.y = 700
       if (xPos !== xPosTemp || yPos !== yPosTemp || direction !== directionTemp || health !== healthTemp) {
         App.item.create(gold, currentCharacter, xPos, yPos, direction, health)
         xPosTemp = xPos
         yPosTemp = yPos
         directionTemp = direction
         healthTemp = health
-
       }
       // PLAYER MOVEMENT
       if (cursors.left.isDown) {
@@ -337,6 +277,7 @@ body {
              player.y - enemy[key]['enemy'].y < 200 && player.y - enemy[key]['enemy'].y > 0)){
             enemy[key]['enemy'].setVelocityX(((enemy[key]['enemy'].x - player.x)/2.2)*-1)
             followingX = true
+            enemy[key]['enemy'].flipX = true;
             // console.log("LEFT")
           }
           else if (player.x - enemy[key]['enemy'].x < 200 && player.x - enemy[key]['enemy'].x > 0 &&
@@ -344,6 +285,7 @@ body {
           player.y - enemy[key]['enemy'].y < 200 && player.y - enemy[key]['enemy'].y > 0)) {
             enemy[key]['enemy'].setVelocityX((player.x - enemy[key]['enemy'].x)/2.2)
             followingX = true
+            enemy[key]['enemy'].flipX = false;
             // console.log("RIGHT")
           }
           else {
@@ -426,6 +368,12 @@ body {
           enemy[key]['healthBar'].setScale(0)
         }
       }
+      if (quests['1']['1'] !== quests['1']['2']) {
+        quests['1']['2'] = quests['1']['1']
+      }
+      else {
+        quests['1']['text'].setText("")
+      }
     }
 
     function damage(id, enemyDamage) {
@@ -441,8 +389,12 @@ body {
       }
       if (cursors.space.isUp && spacePressed) {
         spacePressed = false;
-        // enemyHealth -= 10
       }
+    }
+    // QUESTS
+    function quest1Touch() {
+      quests['1']['text'].setText("touching")
+      quests['1']['1'] += 1
     }
     window.setInterval(function() {
       App.item.create(gold, currentCharacter, xPos, yPos, direction, health)

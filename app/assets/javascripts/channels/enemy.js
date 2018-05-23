@@ -7,23 +7,12 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
       enemy[data['enemyId']]['health'] -= data['enemyDamage']
       enemy[data['enemyId']]['healthBar'].setScale(enemy[data['enemyId']]['health']/100, 1)
       if (enemy[data['enemyId']]['health'] <= 0 && data['x'] === 1) {
-        if (data['y'] === 1 && data['char'] === currentCharacter) {
-          window.setTimeout(function() {
-            App.enemy.create(enemyId, 1, 0, 0, 'create', data['char'])
-          }, 20000)
+        for (let i = 1; i <= enemies; i++) {
+          if (data['y'] === i && data['char'] === currentCharacter) {
+            window.setTimeout(function() {
+              App.enemy.create(enemyId, i, 0, 0, 'create', data['char'])
+            }, 20000)};
         }
-        if (data['y'] === 2 && data['char'] === currentCharacter) {
-          window.setTimeout(function() {
-            App.enemy.create(enemyId, 2, 0, 0, 'create', data['char'])
-          }, 20000)        }
-        if (data['y'] === 3 && data['char'] === currentCharacter) {
-          window.setTimeout(function() {
-            App.enemy.create(enemyId, 3, 0, 0, 'create', data['char'])
-          }, 20000)        }
-        if (data['y'] === 4 && data['char'] === currentCharacter) {
-          window.setTimeout(function() {
-            App.enemy.create(enemyId, 4, 0, 0, 'create', data['char'])
-          }, 20000)        }
       }
     }
     if (data['actionName'] === 'move') {
@@ -57,26 +46,26 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
         id = enemyId.toString()
       }
       if (!enemy[id]) {
-      // console.log(gameEdit)
         console.log("Created enemy "+enemyType+" at "+x+" "+y+" with id "+id)
-        enemy[id] = {}
-        enemy[id]['enemy'] = gameEdit.physics.add.sprite(x, y, 'undead')
+        enemy[id] = {
+          enemy: gameEdit.physics.add.sprite(x, y, 'undead'),
+          type: enemyType,
+          position: {
+            x: x,
+            y: y,
+            startX: x,
+            startY: y,
+          },
+          following: 0,
+          healthBarBack: gameEdit.add.image(200, 200, 'healthBarBack'),
+          healthBar: gameEdit.add.image(200, 200, 'healthBar'),
+          health: 100
+        }
         enemy[id]['enemy'].body.setSize(32, 48)
-        enemy[id]['type'] = enemyType
-        enemy[id]['position'] = {}
-        enemy[id]['position']['x'] = x
-        enemy[id]['position']['y'] = y
-        enemy[id]['position']['startX'] = x
-        enemy[id]['position']['startY'] = y
-        // enemy[id]['name'] = gameEdit.add.text(x, y+30, id) // ADD ID ABOVE ENEMY
-        enemy[id]['following'] = 0
-        enemy[id]['healthBarBack'] = gameEdit.add.image(200, 200, 'healthBarBack')
-        enemy[id]['healthBar'] = gameEdit.add.image(200, 200, 'healthBar')
         enemy[id]['healthBarBack'].x = enemy[id]['enemy'].x
         enemy[id]['healthBarBack'].y = enemy[id]['enemy'].y - 36
         enemy[id]['healthBar'].x = enemy[id]['enemy'].x
         enemy[id]['healthBar'].y = enemy[id]['enemy'].y - 36
-        enemy[id]['health'] = 100
         enemy[id]['attack'] = function() {
           if (cursors.space.isDown) {
             spacePressed = true
