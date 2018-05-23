@@ -12,12 +12,14 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
       }
     }
     if (data['actionName'] === 'move') {
-      enemy[data['enemyId']]['position']['x'] = data['x']
-      enemy[data['enemyId']]['position']['y'] = data['y']
-      enemy[data['enemyId']]['enemy'].x = data['x']
-      enemy[data['enemyId']]['enemy'].y = data['y']
-      enemy[data['enemyId']]['following'] = data['enemyDamage']
-      enemy[data['enemyId']]['enemy'].anims.play('undeadWalk', true)
+      if (data['enemyDamage'] !== currentCharacter) {
+        enemy[data['enemyId']]['position']['x'] = data['x']
+        enemy[data['enemyId']]['position']['y'] = data['y']
+        enemy[data['enemyId']]['enemy'].x = data['x']
+        enemy[data['enemyId']]['enemy'].y = data['y']
+        enemy[data['enemyId']]['following'] = data['enemyDamage']
+        enemy[data['enemyId']]['enemy'].anims.play('undeadWalk', true)
+      }
       if (data['enemyDamage'] === -1) {
         enemy[data['enemyId']]['enemy'].anims.play('undeadStand')
         enemy[data['enemyId']]['following'] = 0
