@@ -11,6 +11,18 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
         enemyCounter -= 1;
       }
     }
+    if (data['actionName'] === 'move') {
+      enemy[data['enemyId']]['position']['x'] = data['x']
+      enemy[data['enemyId']]['position']['y'] = data['y']
+      enemy[data['enemyId']]['enemy'].x = data['x']
+      enemy[data['enemyId']]['enemy'].y = data['y']
+      enemy[data['enemyId']]['following'] = data['enemyDamage']
+      enemy[data['enemyId']]['enemy'].anims.play('undeadWalk', true)
+      if (data['enemyDamage'] === -1) {
+        enemy[data['enemyId']]['enemy'].anims.play('undeadStand')
+        enemy[data['enemyId']]['following'] = 0
+      }
+    }
     if (enemyCounter === 0 && data['actionName'] !== 'login') { // NO ENEMIES AND NOT LOGGING IN
       enemyCounter += 1
       databaseEnemy(data['x'], data['y'])
@@ -34,6 +46,7 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
         enemy[id]['position'] = {}
         enemy[id]['position']['x'] = x
         enemy[id]['position']['y'] = y
+        enemy[id]['following'] = 0
         enemy[id]['healthBarBack'] = gameEdit.add.image(200, 200, 'healthBarBack')
         enemy[id]['healthBar'] = gameEdit.add.image(200, 200, 'healthBar')
         enemy[id]['healthBarBack'].x = enemy[id]['enemy'].x
@@ -52,7 +65,8 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
           }
         }
         enemy[id]['attack']['id'] = id
-        gameEdit.physics.add.collider(player, enemy[id]['enemy'], enemy[id]['attack'])
+        gameEdit.physics.add.overlap(player, enemy[id]['enemy'], enemy[id]['attack'], null, this)
+        gameEdit.physics.add.collider(enemy[id]['enemy'], platforms)
         enemyId += 1
       } else {
         enemyCounter -= 1
@@ -61,7 +75,6 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
     }
   },
   create: function(enemyId, enemyDamage, x, y, actionName){
-    console.log("RAN", actionName)
     // console.log(enemyId, enemyDamage, x, y)
     this.perform('create', {enemyId, enemyDamage, x, y, actionName});
   }

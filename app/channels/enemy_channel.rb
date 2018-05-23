@@ -17,6 +17,8 @@ class EnemyChannel < ApplicationCable::Channel
       # a.health = 100
       # a.total = 1
       # a.save
+    elsif data['actionName'] == 'move'
+      ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: data['x'], y: data['y'], actionName: 'move'
     elsif data['actionName'] == 'login' # login?
       ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: data['x'], y: data['y'], actionName: 'login'
     elsif data['actionName'] == 'damage' #damage
