@@ -1,8 +1,14 @@
+<style>
+body {
+  position: absolute;
+  top: -130px;
+}
+</style>
 <script>
     var config = {
       type: Phaser.AUTO,
-      width: 800,
-      height: 600,
+      width: 1440,
+      height: 800,
       physics: {
           default: 'arcade',
           arcade: {
@@ -68,16 +74,18 @@
       platforms.create(198, 246, 'platform').setScale(0.36, 0.1).refreshBody()
       platforms.create(595, 309, 'platform').setScale(0.28, 0.1).refreshBody()
       platforms.create(172, 550, 'platform').setScale(1, 0.1).refreshBody()
-      platforms.create(-5, 450, 'platform').setScale(0.1, 20).refreshBody()
+      platforms.create(-5, 360, 'platform').setScale(0.1, 40).refreshBody()
       platforms.create(290, 261, 'platform').setScale(0.08, 0.1).refreshBody()
       platforms.create(314, 277, 'platform').setScale(0.03, 0.1).refreshBody()
       platforms.create(18, 274, 'platform').setScale(0.05, 0.1).refreshBody()
       platforms.create(352, 294, 'platform').setScale(0.1, 0.1).refreshBody()
-      platforms.create(200, 165, 'platform').setScale(7, 0.1).refreshBody()
+      platforms.create(400, 165, 'platform').setScale(5, 0.1).refreshBody()
       platforms.create(483, 296, 'platform').setScale(0.2, 0.1).refreshBody()
       platforms.create(654, 250, 'platform').setScale(0.01, 3).refreshBody()
-      platforms.create(574, 550, 'platform').setScale(0.65, 0.1).refreshBody()
+      platforms.create(653, 550, 'platform').setScale(1.04, 0.1).refreshBody()
       platforms.create(1130, 195, 'platform').setScale(2.33, 0.11).refreshBody()
+      platforms.create(862, 375, 'platform').setScale(0.01, 11).refreshBody()
+      platforms.create(1222, 230, 'platform').setScale(1.8, 0.1).refreshBody()
       this.add.image(800, 1000, 'background')
       this.add.image(320, -120, 'backgroundTop')
       this.add.image(1120, -120, 'backgroundTop2')
