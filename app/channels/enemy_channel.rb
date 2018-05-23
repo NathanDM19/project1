@@ -27,6 +27,7 @@ class EnemyChannel < ApplicationCable::Channel
         # puts a.health
         if a.health.to_i <= 0
           a.total = 0
+          a.destroy
         end
         # puts a.health
         a.save
