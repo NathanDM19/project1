@@ -19,6 +19,7 @@
     let currentCharacter = <%= @current_character.id %>
     let singleEnemy = true;
     let spacePressed = false;
+    let aliveEnemy = {}
     let enemy = {}
     let enemyCounter = 0
     let enemyId = <%= Enemy.last.id + 1 %>
@@ -133,24 +134,45 @@
       playerNameText = this.add.text(200, 200, `<%= @current_character.name %>`, { fontSize: '12px', fill: '#FFF' });
       healthBarBack = this.add.image(200, 200, 'healthBarBack')
       healthBar = this.add.image(200, 200, 'healthBar')
-      let aliveEnemy = {}
-      aliveEnemy['undead'] = 0
+      aliveEnemy['undead1'] = 0
+      aliveEnemy['undead2'] = 0
       let enemyObject = <%= Enemy.all.to_json.html_safe %>
       // console.log(enemyObject)
       for (let key in enemyObject) {
         if (enemyObject[key]['total'] === 1) {
-
-          aliveEnemy['undead'] += 1
+          aliveEnemy['undead1'] += 1
           aliveEnemyId = enemyObject[key]['id']
           aliveEnemyX = enemyObject[key]['x']
           aliveEnemyY = enemyObject[key]['y']
+          console.log("loading enemy with" + aliveEnemyId)
+          App.enemy.create(aliveEnemyId, 1, aliveEnemyX, aliveEnemyY, 'login', currentCharacter)
+          enemyId -= 1
+        }
+        if (enemyObject[key]['total'] === 2) {
+          aliveEnemy['undead2'] += 1
+          aliveEnemyId = enemyObject[key]['id']
+          aliveEnemyX = enemyObject[key]['x']
+          aliveEnemyY = enemyObject[key]['y']
+          console.log("loading enemy with" + aliveEnemyId)
+
+          App.enemy.create(aliveEnemyId, 2, aliveEnemyX, aliveEnemyY, 'login', currentCharacter)
+          enemyId -= 1
         }
       }
-      if (aliveEnemy['undead'] > 0) {
-        App.enemy.create(aliveEnemyId, 0, aliveEnemyX, aliveEnemyY, 'login')
-      } else {
-        App.enemy.create(enemyId, 0, 0, 0, 'create')
+      if (aliveEnemy['undead1'] === 0) {
+        // console.log("Creating undead1 with id" + enemyId)
+        aliveEnemy['undead1'] += 1
+        App.enemy.create(enemyId, 1, 0, 0, 'create', currentCharacter)
       }
+      if (aliveEnemy['undead2'] === 0) {
+        // console.log("Creating undead2 with id" + enemyId)
+        aliveEnemy['undead2'] += 1
+        App.enemy.create(enemyId, 2, 0, 0, 'create', currentCharacter)
+      }
+      // if (aliveEnemy['undead'] > 0) {
+      // } else {
+      //   App.enemy.create(enemyId, 0, 0, 0, 'create')
+      // }
       // console.log(player)
       // game.debug.body(player);
     }
@@ -315,12 +337,12 @@
         if (enemy[key]['position']['x'] !== enemy[key]['enemy'].x || enemy[key]['position']['y'] !== enemy[key]['enemy'].y) {
           if (followingY || followingX) {
             followingBoo[key] = true
-            App.enemy.create(key, currentCharacter, enemy[key]['enemy'].x, enemy[key]['enemy'].y, 'move')
+            App.enemy.create(key, currentCharacter, enemy[key]['enemy'].x, enemy[key]['enemy'].y, 'move', currentCharacter)
           }
         }
         if (followingBoo[key] && !followingY && !followingX) {
           followingBoo[key] = false
-          App.enemy.create(key, -1, enemy[key]['enemy'].x, enemy[key]['enemy'].y, 'move')
+          App.enemy.create(key, -1, enemy[key]['enemy'].x, enemy[key]['enemy'].y, 'move', currentCharacter)
         }
         enemy[key]['healthBarBack'].x = enemy[key]['enemy'].x
         enemy[key]['healthBarBack'].y = enemy[key]['enemy'].y - 36
@@ -340,10 +362,11 @@
     }
 
     function damage(id, enemyDamage) {
-      App.enemy.create(id, enemyDamage, 0, 0, 'damage')
+      App.enemy.create(id, enemyDamage, 0, 0, 'damage', currentCharacter)
     }
-    function databaseEnemy(x, y) {
-      App.enemy.create(enemyId, -100, x, y, 'database')
+    function databaseEnemy(x, y, enemyType) {
+      console.log("Creating database entry for "+enemyId)
+      App.enemy.create(enemyId, enemyType, x, y, 'database', currentCharacter)
     }
     function attack() {
       if (cursors.space.isDown) {

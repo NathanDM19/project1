@@ -10,7 +10,7 @@ class EnemyChannel < ApplicationCable::Channel
 
   def create(data)
     if data['actionName'] == 'database' #database
-      Enemy.create id:data['enemyId'], x:data['x'], y:data['y'], health:100, total:1
+      Enemy.create id:data['enemyId'], x:data['x'], y:data['y'], health:100, total:data['enemyDamage']
       # a = Enemy.new
       # a.x = data['x']
       # a.y = data['y']
@@ -18,9 +18,9 @@ class EnemyChannel < ApplicationCable::Channel
       # a.total = 1
       # a.save
     elsif data['actionName'] == 'move'
-      ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: data['x'], y: data['y'], actionName: 'move'
+      ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: data['x'], y: data['y'], actionName: 'move', char:data['currentCharacter']
     elsif data['actionName'] == 'login' # login?
-      ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: data['x'], y: data['y'], actionName: 'login'
+      ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: data['x'], y: data['y'], actionName: 'login', char:data['currentCharacter']
     elsif data['actionName'] == 'damage' #damage
       a = Enemy.find data['enemyId']
       a.health = a.health.to_i - data['enemyDamage'].to_i
@@ -32,12 +32,17 @@ class EnemyChannel < ApplicationCable::Channel
       a.save
       x = rand(95)+50
       y = rand(100)+600
-      ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: x, y: y, actionName: 'damage'
+      ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: x, y: y, actionName: 'damage', char:data['currentCharacter']
 
     elsif data['actionName'] == 'create'# create
-      x = rand(95)+50
-      y = rand(100)+600
-      ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: x, y: y, actionName: 'create'
+      if data['enemyDamage'] == 1
+        x = rand(95)+50
+        y = rand(100)+600
+      elsif data['enemyDamage'] == 2
+        x = rand(95)+ 50
+        y = rand(100)+800
+      end
+      ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: x, y: y, actionName: 'create', char:data['currentCharacter']
     end
   end
 
