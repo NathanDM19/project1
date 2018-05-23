@@ -26,12 +26,15 @@ class EnemyChannel < ApplicationCable::Channel
       a.health = a.health.to_i - data['enemyDamage'].to_i
       # puts a.health
       if a.health.to_i <= 0
+        y = a.total
         a.destroy
+        x = 1
+      else
+        y = 0
+        x = 0
       end
       # puts a.health
       a.save
-      x = rand(95)+50
-      y = rand(100)+600
       ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: x, y: y, actionName: 'damage', char:data['currentCharacter']
 
     elsif data['actionName'] == 'create'# create

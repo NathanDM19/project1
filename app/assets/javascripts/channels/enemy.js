@@ -6,14 +6,11 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
     if (data['actionName'] === 'damage') { // damage
       enemy[data['enemyId']]['health'] -= data['enemyDamage']
       enemy[data['enemyId']]['healthBar'].setScale(enemy[data['enemyId']]['health']/100, 1)
-      if (enemy[data['enemyId']]['health'] <= 0) {
-        aliveEnemy[`undead${enemy[data['enemyId']]['type']}`] -= 1
-        if (aliveEnemy['undead1'] === 0 && data['char'] === currentCharacter) {
-          aliveEnemy['undead1'] += 1
+      if (enemy[data['enemyId']]['health'] <= 0 && data['x'] === 1) {
+        if (data['y'] === 1 && data['char'] === currentCharacter) {
           App.enemy.create(enemyId, 1, 0, 0, 'create', data['char'])
         }
-        if (aliveEnemy['undead2'] === 0 && data['char'] === currentCharacter) {
-          aliveEnemy['undead2'] += 1
+        if (data['y'] === 2 && data['char'] === currentCharacter) {
           App.enemy.create(enemyId, 2, 0, 0, 'create', data['char'])
         }
       }
