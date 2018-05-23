@@ -8,11 +8,22 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
       enemy[data['enemyId']]['healthBar'].setScale(enemy[data['enemyId']]['health']/100, 1)
       if (enemy[data['enemyId']]['health'] <= 0 && data['x'] === 1) {
         if (data['y'] === 1 && data['char'] === currentCharacter) {
-          App.enemy.create(enemyId, 1, 0, 0, 'create', data['char'])
+          window.setTimeout(function() {
+            App.enemy.create(enemyId, 1, 0, 0, 'create', data['char'])
+          }, 20000)
         }
         if (data['y'] === 2 && data['char'] === currentCharacter) {
-          App.enemy.create(enemyId, 2, 0, 0, 'create', data['char'])
-        }
+          window.setTimeout(function() {
+            App.enemy.create(enemyId, 2, 0, 0, 'create', data['char'])
+          }, 20000)        }
+        if (data['y'] === 3 && data['char'] === currentCharacter) {
+          window.setTimeout(function() {
+            App.enemy.create(enemyId, 3, 0, 0, 'create', data['char'])
+          }, 20000)        }
+        if (data['y'] === 4 && data['char'] === currentCharacter) {
+          window.setTimeout(function() {
+            App.enemy.create(enemyId, 4, 0, 0, 'create', data['char'])
+          }, 20000)        }
       }
     }
     if (data['actionName'] === 'move') {
@@ -55,6 +66,8 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
         enemy[id]['position'] = {}
         enemy[id]['position']['x'] = x
         enemy[id]['position']['y'] = y
+        enemy[id]['position']['startX'] = x
+        enemy[id]['position']['startY'] = y
         // enemy[id]['name'] = gameEdit.add.text(x, y+30, id) // ADD ID ABOVE ENEMY
         enemy[id]['following'] = 0
         enemy[id]['healthBarBack'] = gameEdit.add.image(200, 200, 'healthBarBack')

@@ -42,8 +42,14 @@ class EnemyChannel < ApplicationCable::Channel
         x = rand(95)+50
         y = rand(100)+600
       elsif data['enemyDamage'] == 2
-        x = rand(95)+ 50
-        y = rand(100)+800
+        x = rand(95)+50
+        y = rand(100)+900
+      elsif data['enemyDamage'] == 3
+        x = rand(95)+675
+        y = rand(100)+600
+      elsif data['enemyDamage'] == 4
+        x = rand(95)+675
+        y = rand(100)+900
       end
       ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: x, y: y, actionName: 'create', char:data['currentCharacter']
     end
