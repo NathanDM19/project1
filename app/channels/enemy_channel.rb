@@ -9,7 +9,7 @@ class EnemyChannel < ApplicationCable::Channel
   end
 
   def create(data)
-    if data['enemyDamage'] == -100
+    if data['actionName'] == 'database' #database
       Enemy.create id:data['enemyId'], x:data['x'], y:data['y'], health:100, total:1
       # a = Enemy.new
       # a.x = data['x']
@@ -17,28 +17,25 @@ class EnemyChannel < ApplicationCable::Channel
       # a.health = 100
       # a.total = 1
       # a.save
-
-    elsif data['enemyDamage'] == 9000
-      ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: data['x'], y: data['y']
-    elsif data['enemyId'].to_i > 1 && data['enemyDamage'] > 0
+    elsif data['actionName'] == 'login' # login?
+      ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: data['x'], y: data['y'], actionName: 'login'
+    elsif data['actionName'] == 'damage' #damage
       a = Enemy.find data['enemyId']
-      if a.total == 1
-        a.health = a.health.to_i - data['enemyDamage'].to_i
-        # puts a.health
-        if a.health.to_i <= 0
-          a.total = 0
-          a.destroy
-        end
-        # puts a.health
-        a.save
-        x = rand(95)+50
-        y = rand(100)+600
-        ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: x, y: y
+      a.health = a.health.to_i - data['enemyDamage'].to_i
+      # puts a.health
+      if a.health.to_i <= 0
+        a.destroy
       end
-    else
+      # puts a.health
+      a.save
       x = rand(95)+50
       y = rand(100)+600
-      ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: x, y: y
+      ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: x, y: y, actionName: 'damage'
+
+    elsif data['actionName'] == 'create'# create
+      x = rand(95)+50
+      y = rand(100)+600
+      ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: x, y: y, actionName: 'create'
     end
   end
 

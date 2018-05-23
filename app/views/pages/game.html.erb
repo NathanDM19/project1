@@ -136,10 +136,10 @@
       // console.log(aliveEnemy, aliveEnemyX, aliveEnemyY, aliveEnemyId)
       if (aliveEnemy > 0) {
         // console.log(aliveEnemyId, aliveEnemyX, aliveEnemyY)
-        App.enemy.create(aliveEnemyId, 9000, aliveEnemyX, aliveEnemyY)
+        App.enemy.create(aliveEnemyId, 0, aliveEnemyX, aliveEnemyY, 'login')
         // enemyCounter += 1;
       } else {
-        App.enemy.create(enemyId, 0, 0, 0)
+        App.enemy.create(enemyId, 0, 0, 0, 'create')
       }
       // console.log(player)
       // game.debug.body(player);
@@ -269,11 +269,11 @@
       // App.enemy.create(0, 0, 0, 0)
     }
 
-    function runCreate(id, enemyDamage) {
-      App.enemy.create(id, enemyDamage, 0, 0)
+    function damage(id, enemyDamage) {
+      App.enemy.create(id, enemyDamage, 0, 0, 'damage')
     }
     function databaseEnemy(x, y) {
-      App.enemy.create(enemyId, -100, x, y)
+      App.enemy.create(enemyId, -100, x, y, 'database')
     }
     function attack() {
       if (cursors.space.isDown) {

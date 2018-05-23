@@ -3,7 +3,7 @@ this.App = {};
 App.cable = ActionCable.createConsumer();
 App.enemy = App.cable.subscriptions.create('EnemyChannel', {
   received: function(data) {
-    if (data['enemyDamage'] !== 0 && data['enemyDamage'] !== 9000) {
+    if (data['actionName'] === 'damage') { // damage
       console.log(data['enemyId'])
       enemy[data['enemyId']]['health'] -= data['enemyDamage']
       enemy[data['enemyId']]['healthBar'].setScale(enemy[data['enemyId']]['health']/100, 1)
@@ -11,11 +11,11 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
         enemyCounter -= 1;
       }
     }
-    if (enemyCounter === 0 && data['enemyDamage'] !== 9000) {
+    if (enemyCounter === 0 && data['actionName'] !== 'login') { // NO ENEMIES AND NOT LOGGING IN
       enemyCounter += 1
       databaseEnemy(data['x'], data['y'])
       createEnemy(data['x'], data['y'])
-    } else if (data['enemyDamage'] === 9000) {
+    } else if (data['actionName'] === 'login') { // LOGIN
       enemyCounter += 1
       createEnemy(data['x'], data['y'], data['enemyId'])
       enemyId -= 1
@@ -48,8 +48,7 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
           if (cursors.space.isUp && spacePressed) {
             spacePressed = false;
             enemyDamage = 10
-            console.log(this.id)
-            runCreate(this.id, enemyDamage)
+            damage(this.id, enemyDamage)
           }
         }
         enemy[id]['attack']['id'] = id
@@ -61,9 +60,9 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
       }
     }
   },
-  create: function(enemyId, enemyDamage, x, y){
-    // console.log("RAN")
+  create: function(enemyId, enemyDamage, x, y, actionName){
+    console.log("RAN", actionName)
     // console.log(enemyId, enemyDamage, x, y)
-    this.perform('create', {enemyId, enemyDamage, x, y});
+    this.perform('create', {enemyId, enemyDamage, x, y, actionName});
   }
 })
