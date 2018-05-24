@@ -11,7 +11,15 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
           if (data['y'] === i && data['char'] === currentCharacter) {
             window.setTimeout(function() {
               App.enemy.create(enemyId, i, 0, 0, 'create', data['char'])
-            }, 20000)};
+            }, 20000)
+            if (quests[1]['active'] && quests[1]['total'] < 10) {
+              quests[1]['total'] += 1;
+              quests[1]['activeText'].setText(`Kill 10 undead enemies: ${quests[1]['total']}/10`)
+              if (quests[1]['total'] === 10) {
+                quests[1]['activeText'].setText(`Complete! Kill 10 undead enemies: ${quests[1]['total']}/10`)
+              }
+            }
+          }
         }
       }
     }

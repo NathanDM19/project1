@@ -52,6 +52,7 @@ body {
     let gold = <%= @current_character.gold %>
     // Quest variables
     let quests = {}
+    let totalQuests = 1
     function preload() {
       //Loading the images in
       this.load.spritesheet('player', 'assets/player.png', { frameWidth: 64, frameHeight: 64 });
@@ -70,7 +71,7 @@ body {
     function create() {
       //Loading the sky background and the character
       platforms = this.physics.add.staticGroup();
-      quest1 = this.physics.add.staticGroup();
+      quest = this.physics.add.staticGroup();
       platforms.create(-83, 260, 'platform').setScale(1, 0.1).refreshBody()
       platforms.create(198, 246, 'platform').setScale(0.36, 0.1).refreshBody()
       platforms.create(595, 309, 'platform').setScale(0.28, 0.1).refreshBody()
@@ -91,9 +92,23 @@ body {
       this.add.image(320, -120, 'backgroundTop')
       this.add.image(1120, -120, 'backgroundTop2')
       this.add.image(-320, 360, 'backgroundLeft')
-      quest1.create(460, 420, 'questIcon')
-      quests['1'] = {1: 0, 2: 0}
-      quests['1']['text'] = gameEdit.add.text(400, 380, `quest text`, { fontSize: '32px', fill: '#FFF' });
+      questIcons = {
+        1: quest.create(460, 420, 'questIcon')
+      }
+      goldText = gameEdit.add.text(310, 360, "", { fontSize: '25px', fill: '#FFF' })
+      quests[1] = {
+        1: 0,
+        2: 0,
+        'text': gameEdit.add.text(310, 360, "", { fontSize: '25px', fill: '#FFF' }),
+        'active': false,
+        'total': 0,
+        'completed': false
+      }
+      // quests[1]['text'] = gameEdit.add.text(310, 360, "", { fontSize: '25px', fill: '#FFF' });
+      // quests[1]['active'] = false;
+      // quests[1]['quest'] = function() {
+      //   quests[1]['activeText'] = gameEdit.add.text(0, 0, "Kill 10 undead enemies", {fontSize: '20px', fill: '#FFF'} )
+      // }
 
       //Making a platforms class to add platforms.create(x, y, name)
       player = this.physics.add.sprite(400, 490, 'player');  //.setScrollFactor(0);
@@ -102,7 +117,7 @@ body {
       //Adding collision to end of screen
       // Collision between player and platforms
       this.physics.add.collider(player, platforms);
-      this.physics.add.overlap(player, quest1, quest1Touch, null, this);
+      this.physics.add.overlap(player, quest, quest1Touch, null, this);
       // Animation for sprite
       this.anims.create({
           key: 'left',
@@ -168,6 +183,9 @@ body {
           App.enemy.create(enemyId, i, 0, 0, 'create', currentCharacter)
         }
       }
+      gameEdit.input.keyboard.addKeys(
+        { 'e': Phaser.Input.Keyboard.KeyCodes.E,
+          's': Phaser.Input.Keyboard.KeyCodes.S });
 
     }
     function update() {
@@ -368,20 +386,60 @@ body {
           enemy[key]['healthBar'].setScale(0)
         }
       }
-      if (quests['1']['1'] !== quests['1']['2']) {
-        quests['1']['2'] = quests['1']['1']
+      // QUESTS
+      // Makes quest information follow player
+      for (let i = 1; i <= totalQuests; i++) {
+        if (quests[i]['active']) {
+          if (quests[i]['total'] < 10) {
+            quests[i]['activeText'].x = player.x + 380
+            quests[i]['activeText'].y = player.y - 380
+          } else {
+            quests[i]['activeText'].x = player.x + 240
+            quests[i]['activeText'].y = player.y - 380
+          }
+        }
+        if (quests[i][1] !== quests[i][2]) {
+          // If player hasnt done quest yet show this
+          if (quests[i]['active'] === false && quests[i]['completed'] === false) {
+            quests[i]['text'].setText("Press E to start quest")
+            // If player is in quest and has finished show this
+          } else if (quests[i]['active'] && quests[i]['total'] === 10) {
+            quests[i]['text'].setText("Press E to hand in quest")
+          }
+          quests[i][2] = quests[i][1];
+          quests[i][3] = true;
+        }
+        else if (quests[i]['active'] && quests[i]['total'] !== 10) {
+          quests[i]['text'].setText("")
+          quests[i][3] = false;
+        }
+        else {
+          quests[i]['text'].setText("")
+          quests[i][3] = false;
+        }
+        // User is over quest icon and e is pressed
+        if (quests[i][3] && gameEdit.input.keyboard.keys[69].isDown) {
+          // Quest isnt active and quest hasnt been done
+          if (quests[i]['active'] === false && quests[i]['completed'] === false) {
+            quests[i]['active'] = true;
+            quests[i]['text'].setText("")
+            quests[i]['activeText'] = gameEdit.add.text(0, 0, "Kill 10 undead enemies: 0/10", {fontSize: '20px', fill: '#FFF'})
+            // Quest is active and quest is complete
+          } else if (quests[i]['active'] && quests[i]['total'] === 10) {
+            quests[i]['active'] = false;
+            quests[i]['completed'] = true;
+            quests[i]['activeText'].setText("")
+            quests[i]['text'].setText("")
+            questIcons[i].disableBody(true, true)
+            gold += 10
+          }
+        }
       }
-      else {
-        quests['1']['text'].setText("")
-      }
-    }
-
-    function damage(id, enemyDamage) {
-      App.enemy.create(id, enemyDamage, 0, 0, 'damage', currentCharacter)
-    }
-    function databaseEnemy(x, y, enemyType) {
-      console.log("Creating database entry for "+enemyId)
-      App.enemy.create(enemyId, enemyType, x, y, 'database', currentCharacter)
+      // If player is over quest icon
+      // Gold text
+      goldText.setText(`Gold: ${gold}`)
+      goldText.x = player.x - 710
+      goldText.y = player.y - 380
     }
     function attack() {
       if (cursors.space.isDown) {
@@ -393,8 +451,14 @@ body {
     }
     // QUESTS
     function quest1Touch() {
-      quests['1']['text'].setText("touching")
-      quests['1']['1'] += 1
+      quests[1][1] += 1
+    }
+    function damage(id, enemyDamage) {
+      App.enemy.create(id, enemyDamage, 0, 0, 'damage', currentCharacter)
+    }
+    function databaseEnemy(x, y, enemyType) {
+      console.log("Creating database entry for "+enemyId)
+      App.enemy.create(enemyId, enemyType, x, y, 'database', currentCharacter)
     }
     window.setInterval(function() {
       App.item.create(gold, currentCharacter, xPos, yPos, direction, health)
