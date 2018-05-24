@@ -44,9 +44,9 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
       createEnemy(data['x'], data['y'], data['enemyDamage'])
     }
     if (data['actionName'] === 'login' && data['char'] === currentCharacter) { // LOGIN
-      createEnemy(data['x'], data['y'], data['enemyDamage'], data['enemyId']) // x y enemyId, enemyType
+      createEnemy(data['x'], data['y'], data['enemyDamage'], data['enemyId'], data['health']) // x y enemyId, enemyType
     }
-    function createEnemy(x, y, enemyType, localEnemyId) {
+    function createEnemy(x, y, enemyType, localEnemyId, health) {
       if (localEnemyId) {
         id = localEnemyId
       } else {
@@ -66,19 +66,28 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
           },
           following: 0,
           healthBarBack: gameEdit.add.image(200, 200, 'healthBarBack'),
-          healthBar: gameEdit.add.image(200, 200, 'healthBar'),
-          health: 100
+          healthBar: gameEdit.add.image(200, 200, 'healthBar')
         }
+        if (data['health']) {
+          enemy[id]['health'] = data['health']
+        } else {
+          enemy[id]['health'] = 100
+        }
+        enemy[data['enemyId']]['healthBar'].setScale(enemy[data['enemyId']]['health']/100, 1)
         enemy[id]['enemy'].body.setSize(32, 48)
         enemy[id]['healthBarBack'].x = enemy[id]['enemy'].x
         enemy[id]['healthBarBack'].y = enemy[id]['enemy'].y - 36
         enemy[id]['healthBar'].x = enemy[id]['enemy'].x
         enemy[id]['healthBar'].y = enemy[id]['enemy'].y - 36
+        enemyCollide[id] = {}
+        enemyCollide[id][2] = 0
         enemy[id]['attack'] = function() {
+          // console.log({enemy: id, thisid: this.id, enemy });
+          enemyCollide[id]['collide'] = true
+          enemyCollide[id][1] += 1
           if (cursors.space.isDown) {
             spacePressed = true
-          }
-          if (cursors.space.isUp && spacePressed) {
+          } else if(spacePressed) {
             spacePressed = false;
             enemyDamage = 10
             console.log("attacked "+this.id)

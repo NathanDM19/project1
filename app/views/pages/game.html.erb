@@ -53,6 +53,8 @@ body {
     // Quest variables
     let quests = {}
     let totalQuests = 1
+    // Enemy damage
+    let enemyCollide = {}
     function preload() {
       //Loading the images in
       this.load.spritesheet('player', 'assets/player.png', { frameWidth: 64, frameHeight: 64 });
@@ -95,16 +97,24 @@ body {
       questIcons = {
         1: quest.create(460, 420, 'questIcon')
       }
-      goldText = gameEdit.add.text(310, 360, "", { fontSize: '25px', fill: '#FFF' })
+      goldText = gameEdit.add.text(0, 0, "", { fontSize: '25px', fill: '#FFF' })
       quests[1] = {
         1: 0,
         2: 0,
-        'text': gameEdit.add.text(310, 360, "", { fontSize: '25px', fill: '#FFF' }),
+        'hoverText': gameEdit.add.text(310, 360, "", { fontSize: '25px', fill: '#FFF' }),
         'active': false,
         'total': 0,
         'completed': false
       }
-      // quests[1]['text'] = gameEdit.add.text(310, 360, "", { fontSize: '25px', fill: '#FFF' });
+      quests[2] = {
+        1: 0,
+        2: 0,
+        'hoverText': gameEdit.add.text(310, 1000, "", {fontSize: '25px', fill: '#FFF'}),
+        'active': false,
+        'total': 0,
+        'completed': false
+      }
+      // quests[1]['hoverText'] = gameEdit.add.text(310, 360, "", { fontSize: '25px', fill: '#FFF' });
       // quests[1]['active'] = false;
       // quests[1]['quest'] = function() {
       //   quests[1]['activeText'] = gameEdit.add.text(0, 0, "Kill 10 undead enemies", {fontSize: '20px', fill: '#FFF'} )
@@ -354,6 +364,9 @@ body {
               goingBackY = false
             }
           }
+          if (enemy[key]['enemy'].x - enemy[key]['position']['startX'] < 7 && enemy[key]['enemy'].x - enemy[key]['position']['startX'] > -7 && enemy[key]['enemy'].y - enemy[key]['position']['startY'] < 7 && enemy[key]['enemy'].y - enemy[key]['position']['startY'] > -7 && (goingBackY || goingBackX)) {
+              damage(key, (100-enemy[key]['health'])*-1)
+          }
         }
         if (followingX || followingY || goingBackX || goingBackY) {
           enemy[key]['enemy'].anims.play('undeadWalk', true)
@@ -401,37 +414,58 @@ body {
         if (quests[i][1] !== quests[i][2]) {
           // If player hasnt done quest yet show this
           if (quests[i]['active'] === false && quests[i]['completed'] === false) {
-            quests[i]['text'].setText("Press E to start quest")
+            quests[i]['hoverText'].setText("Press E to start quest")
             // If player is in quest and has finished show this
           } else if (quests[i]['active'] && quests[i]['total'] === 10) {
-            quests[i]['text'].setText("Press E to hand in quest")
+            quests[i]['hoverText'].setText("Press E to hand in quest")
           }
           quests[i][2] = quests[i][1];
           quests[i][3] = true;
         }
         else if (quests[i]['active'] && quests[i]['total'] !== 10) {
-          quests[i]['text'].setText("")
+          quests[i]['hoverText'].setText("")
           quests[i][3] = false;
         }
         else {
-          quests[i]['text'].setText("")
+          quests[i]['hoverText'].setText("")
           quests[i][3] = false;
         }
         // User is over quest icon and e is pressed
         if (quests[i][3] && gameEdit.input.keyboard.keys[69].isDown) {
           // Quest isnt active and quest hasnt been done
-          if (quests[i]['active'] === false && quests[i]['completed'] === false) {
+          if (!quests[i]['active'] && !quests[i]['completed']) {
             quests[i]['active'] = true;
-            quests[i]['text'].setText("")
+            quests[i]['hoverText'].setText("")
             quests[i]['activeText'] = gameEdit.add.text(0, 0, "Kill 10 undead enemies: 0/10", {fontSize: '20px', fill: '#FFF'})
             // Quest is active and quest is complete
           } else if (quests[i]['active'] && quests[i]['total'] === 10) {
             quests[i]['active'] = false;
             quests[i]['completed'] = true;
             quests[i]['activeText'].setText("")
-            quests[i]['text'].setText("")
+            quests[i]['hoverText'].setText("")
             questIcons[i].disableBody(true, true)
             gold += 10
+          }
+        }
+        // Showing quest icon
+        if (!quests[i]['completed']) {
+          questIcons[i].setScale(1)
+        } else {
+          questIcons[i].setScale(0)
+        }
+        for (let key in enemy) {
+          if (enemyCollide[key][1] !== enemyCollide[key][2]) {
+            enemyCollide[key][2] = enemyCollide[key][1]
+          } else {
+            enemyCollide[key][1] = 0
+          }
+          if (enemyCollide[key][1] === 1) {
+            window.setTimeout(function() {
+              if (enemyCollide[key][1] > 0) {
+                health -= 10;
+                enemyCollide[key][1] = 0
+              }
+            }, 1000)
           }
         }
       }

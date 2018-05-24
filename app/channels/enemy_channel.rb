@@ -20,7 +20,8 @@ class EnemyChannel < ApplicationCable::Channel
     elsif data['actionName'] == 'move'
       ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: data['x'], y: data['y'], actionName: 'move', char:data['currentCharacter']
     elsif data['actionName'] == 'login' # login?
-      ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: data['x'], y: data['y'], actionName: 'login', char:data['currentCharacter']
+      a = Enemy.find data['enemyId']
+      ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], enemyDamage: data['enemyDamage'], x: data['x'], y: data['y'], actionName: 'login', char:data['currentCharacter'], health: a.health
     elsif data['actionName'] == 'damage' #damage
       a = Enemy.find data['enemyId']
       a.health = a.health.to_i - data['enemyDamage'].to_i
