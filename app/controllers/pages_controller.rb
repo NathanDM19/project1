@@ -10,6 +10,7 @@ class PagesController < ApplicationController
   def character_create
     character = Character.new character_params
     character.user = @current_user
+    character.gold = 0
     character.save
     if character.persisted?
       session[:character_id] = character.id
@@ -40,6 +41,6 @@ class PagesController < ApplicationController
   private
 
   def character_params
-    params.require(:character).permit(:name, :gold)
+    params.require(:character).permit(:name)
   end
 end
