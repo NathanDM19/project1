@@ -39,6 +39,9 @@ body {
     let direction = 'turn'
     let directionTemp;
     let player
+    let playerDead = false;
+    let deathText;
+    let deathTextBelow;
     let playerDetails = {};
     let playerCreated = {};;
     let playerSprites = {};
@@ -52,7 +55,7 @@ body {
     let gold = <%= @current_character.gold %>
     // Quest variables
     let quests = {}
-    let totalQuests = 1
+    let totalQuests = 2
     // Enemy damage
     let enemyCollide = {}
     function preload() {
@@ -63,22 +66,30 @@ body {
       this.load.image('backgroundTop', 'assets/backgroundtop.png')
       this.load.image('backgroundTop2', 'assets/backgroundtop2.png')
       this.load.image('backgroundLeft', 'assets/backgroundleft.png')
+      this.load.image('backgroundLeft2', 'assets/backgroundleft2.png')
       this.load.image('healthBar', 'assets/healthbar.png')
       this.load.image('healthBarBack', 'assets/healthbarback.png')
       this.load.spritesheet('undead', 'assets/enemies/undeadWalk.png', { frameWidth: 56, frameHeight: 48});
+      this.load.spritesheet('undeadDeath', 'assets/enemies/undeadDeath.png', { frameWidth: 72, frameHeight: 32});
+      this.load.spritesheet('undeadIdle', 'assets/enemies/undeadIdle.png', { frameWidth: 48, frameHeight: 32});
+      this.load.spritesheet('undeadDamage', 'assets/enemies/undeadDamage.png', {frameWidth: 48, frameHeight: 32});
       this.load.image('questIcon', 'assets/questIcon.png');
+      this.load.image('star', 'assets/star.png')
       gameEdit = this
       // console.log(gameEdit)
     }
     function create() {
       //Loading the sky background and the character
       platforms = this.physics.add.staticGroup();
-      quest = this.physics.add.staticGroup();
+      quest1 = this.physics.add.staticGroup();
+      quest2 = this.physics.add.staticGroup();
+      quest3 = this.physics.add.staticGroup();
+      stars = this.physics.add.staticGroup();
       platforms.create(-83, 260, 'platform').setScale(1, 0.1).refreshBody()
       platforms.create(198, 246, 'platform').setScale(0.36, 0.1).refreshBody()
       platforms.create(595, 309, 'platform').setScale(0.28, 0.1).refreshBody()
       platforms.create(172, 550, 'platform').setScale(1, 0.1).refreshBody()
-      platforms.create(-5, 360, 'platform').setScale(0.1, 40).refreshBody()
+      platforms.create(-5, 360, 'platform').setScale(0.1, 50).refreshBody()
       platforms.create(290, 261, 'platform').setScale(0.08, 0.1).refreshBody()
       platforms.create(314, 277, 'platform').setScale(0.03, 0.1).refreshBody()
       platforms.create(18, 274, 'platform').setScale(0.05, 0.1).refreshBody()
@@ -90,12 +101,17 @@ body {
       platforms.create(1130, 195, 'platform').setScale(2.33, 0.11).refreshBody()
       platforms.create(862, 375, 'platform').setScale(0.01, 11).refreshBody()
       platforms.create(1222, 230, 'platform').setScale(1.8, 0.1).refreshBody()
+      platforms.create(500, 1100, 'platform').setScale(4, 1).refreshBody()
+      platforms.create(910, 500, 'platform').setScale(0.1, 40).refreshBody()
       this.add.image(800, 1000, 'background')
       this.add.image(320, -120, 'backgroundTop')
       this.add.image(1120, -120, 'backgroundTop2')
       this.add.image(-320, 360, 'backgroundLeft')
+      this.add.image(-320, 1480, 'backgroundLeft2')
       questIcons = {
-        1: quest.create(460, 420, 'questIcon')
+        1: quest1.create(460, 420, 'questIcon'),
+        2: quest2.create(460, 480, 'questIcon'),
+        3: quest3.create(-500, -500, 'questIcon')
       }
       goldText = gameEdit.add.text(0, 0, "", { fontSize: '25px', fill: '#FFF' })
       quests[1] = {
@@ -104,15 +120,26 @@ body {
         'hoverText': gameEdit.add.text(310, 360, "", { fontSize: '25px', fill: '#FFF' }),
         'active': false,
         'total': 0,
-        'completed': false
+        'completed': false,
+        'upTo': true
       }
       quests[2] = {
         1: 0,
         2: 0,
-        'hoverText': gameEdit.add.text(310, 1000, "", {fontSize: '25px', fill: '#FFF'}),
+        'hoverText': gameEdit.add.text(310, 360, "", {fontSize: '25px', fill: '#FFF'}),
         'active': false,
         'total': 0,
-        'completed': false
+        'completed': false,
+        'upTo': false
+      }
+      quests[3] = {
+        1: 0,
+        2: 0,
+        'hoverText': gameEdit.add.text(310, 360, "", {fontSize: '25px', fill: '#FFF'}),
+        'active': false,
+        'total': 0,
+        'completed': false,
+        'upTo': false
       }
       // quests[1]['hoverText'] = gameEdit.add.text(310, 360, "", { fontSize: '25px', fill: '#FFF' });
       // quests[1]['active'] = false;
@@ -127,12 +154,13 @@ body {
       //Adding collision to end of screen
       // Collision between player and platforms
       this.physics.add.collider(player, platforms);
-      this.physics.add.overlap(player, quest, quest1Touch, null, this);
+      this.physics.add.overlap(player, quest1, quest1Touch, null, this);
+      this.physics.add.overlap(player, quest2, quest2Touch, null, this);
       // Animation for sprite
       this.anims.create({
           key: 'left',
-          frames: this.anims.generateFrameNumbers('player', { start: 29 , end: 31 }),
-          frameRate: 10,
+          frames: this.anims.generateFrameNumbers('player', { start: 29 , end: 34 }),
+          frameRate: 9,
           repeat: -1
       });
       this.anims.create({
@@ -142,8 +170,8 @@ body {
       });
       this.anims.create({
           key: 'right',
-          frames: this.anims.generateFrameNumbers('player', { start: 29, end: 31 }),
-          frameRate: 10,
+          frames: this.anims.generateFrameNumbers('player', { start: 29, end: 34 }),
+          frameRate: 9,
           repeat: -1
       });
       this.anims.create({
@@ -154,18 +182,31 @@ body {
       this.anims.create({
           key: 'undeadWalk',
           frames: this.anims.generateFrameNumbers('undead', {start: 0, end: 19}),
-          frameRate: 10,
+          frameRate: 20,
           repeat: -1
       })
       this.anims.create({
-        key: 'undeadStand',
-        frames: [ { key: 'undead', frame: 0} ],
-        frameRate: 20
+        key: 'undeadIdle',
+        frames: this.anims.generateFrameNumbers('undeadIdle', {start: 0, end: 17}),
+        frameRate: 20,
+        repeat: -1
+      })
+      this.anims.create({
+        key: 'undeadDeath',
+        frames: this.anims.generateFrameNumbers('undeadDeath', {start: 0, end: 12}),
+        frameRate: 10,
+        repeat: -1
+      })
+      this.anims.create({
+        key: 'undeadDamage',
+        frames: this.anims.generateFrameNumbers('undeadDamage', {start: 0, end: 15}),
       })
       // Adding keyboard functionality
       cursors = this.input.keyboard.createCursorKeys();
       this.cameras.main.startFollow(player);
       playerNameText = this.add.text(200, 200, `<%= @current_character.name %>`, { fontSize: '12px', fill: '#FFF' });
+      deathText = gameEdit.add.text(0, 0, ``, { fontSize: '100px', fill: '#FFF' });
+      deathTextBelow = gameEdit.add.text(0, 0, "", {fontSize: '50px', fill: '#FFF'});
       healthBarBack = this.add.image(200, 200, 'healthBarBack')
       healthBar = this.add.image(200, 200, 'healthBar')
       aliveEnemy['undead1'] = 0
@@ -212,22 +253,30 @@ body {
             playerCreated[key] = true
           }
           if (playerSprites[`player${key}`].x !== playerDetails[key]['xPos'] || playerSprites[`player${key}`].y !== playerDetails[key]['yPos'] || playerDetails[key]['xPos'] - ((100-playerDetails[key]['health'])/4) !== playerHealthBar[`player${key}`].x || playerDetails[key]['direction'] !== playerDetails[key]['tempDirection']) {
-            playerDetails[key]['tempDirection'] = playerDetails[key]['direction']
-            playerSprites[`player${key}`].x = playerDetails[key]['xPos'];
-            playerSprites[`player${key}`].y = playerDetails[key]['yPos'];
-            playerSprites[`player${key}`].anims.play(playerDetails[key]['direction'], true);
-            if (playerDetails[key]['direction'] === 'left') {
-              playerSprites[`player${key}`].flipX = true
-            } else if (playerDetails[key]['direction'] === 'right') {
-              playerSprites[`player${key}`].flipX = false
+            if (playerDetails[key]['health'] === 0) {
+              playerHealthBarBack[`player${key}`].setScale(0);
+              playerHealthBar[`player${key}`].setScale(0);
+              playerSprites[`player${key}`].disableBody();
+              playerSprites[`player${key}`].setScale(0);
+              playerNames[`player${key}`].setText("");
+            } else {
+              playerDetails[key]['tempDirection'] = playerDetails[key]['direction']
+              playerSprites[`player${key}`].x = playerDetails[key]['xPos'];
+              playerSprites[`player${key}`].y = playerDetails[key]['yPos'];
+              playerSprites[`player${key}`].anims.play(playerDetails[key]['direction'], true);
+              if (playerDetails[key]['direction'] === 'left') {
+                playerSprites[`player${key}`].flipX = true
+              } else if (playerDetails[key]['direction'] === 'right') {
+                playerSprites[`player${key}`].flipX = false
+              }
+              playerNames[`player${key}`].x = playerDetails[key]['xPos'] - 27;
+              playerNames[`player${key}`].y = playerDetails[key]['yPos'] - 57;
+              playerHealthBarBack[`player${key}`].x = playerDetails[key]['xPos'];
+              playerHealthBarBack[`player${key}`].y = playerDetails[key]['yPos'] - 36;
+              playerHealthBar[`player${key}`].setScale(playerDetails[key]['health']/100, 1);
+              playerHealthBar[`player${key}`].x = playerDetails[key]['xPos'] - ((100-playerDetails[key]['health'])/4);
+              playerHealthBar[`player${key}`].y = playerDetails[key]['yPos'] - 36;
             }
-            playerNames[`player${key}`].x = playerDetails[key]['xPos'] - 27;
-            playerNames[`player${key}`].y = playerDetails[key]['yPos'] - 57;
-            playerHealthBarBack[`player${key}`].x = playerDetails[key]['xPos'];
-            playerHealthBarBack[`player${key}`].y = playerDetails[key]['yPos'] - 36;
-            playerHealthBar[`player${key}`].setScale(playerDetails[key]['health']/100, 1);
-            playerHealthBar[`player${key}`].x = playerDetails[key]['xPos'] - ((100-playerDetails[key]['health'])/4);
-            playerHealthBar[`player${key}`].y = playerDetails[key]['yPos'] - 36;
           }
         }
       }
@@ -302,7 +351,7 @@ body {
         if (enemy[key]['following'] === 0 || enemy[key]['following'] === currentCharacter) {
           if (enemy[key]['enemy'].x - player.x < 200 && enemy[key]['enemy'].x - player.x > 0 &&
              (enemy[key]['enemy'].y - player.y < 200 && enemy[key]['enemy'].y - player.y > 0 ||
-             player.y - enemy[key]['enemy'].y < 200 && player.y - enemy[key]['enemy'].y > 0)){
+             player.y - enemy[key]['enemy'].y < 200 && player.y - enemy[key]['enemy'].y > 0) && enemy[key]['health'] > 0){
             enemy[key]['enemy'].setVelocityX(((enemy[key]['enemy'].x - player.x)/2.2)*-1)
             followingX = true
             enemy[key]['enemy'].flipX = true;
@@ -310,7 +359,7 @@ body {
           }
           else if (player.x - enemy[key]['enemy'].x < 200 && player.x - enemy[key]['enemy'].x > 0 &&
           (enemy[key]['enemy'].y - player.y < 200 && enemy[key]['enemy'].y - player.y > 0 ||
-          player.y - enemy[key]['enemy'].y < 200 && player.y - enemy[key]['enemy'].y > 0)) {
+          player.y - enemy[key]['enemy'].y < 200 && player.y - enemy[key]['enemy'].y > 0) && enemy[key]['health'] > 0) {
             enemy[key]['enemy'].setVelocityX((player.x - enemy[key]['enemy'].x)/2.2)
             followingX = true
             enemy[key]['enemy'].flipX = false;
@@ -319,11 +368,11 @@ body {
           else {
             enemy[key]['enemy'].setVelocityX(0)
             followingX = false
-            if (enemy[key]['enemy'].x > enemy[key]['position']['startX'] + 5) {
+            if (enemy[key]['enemy'].x > enemy[key]['position']['startX'] + 5 && enemy[key]['health'] > 0) {
               enemy[key]['enemy'].setVelocityX(-75)
               goingBackX = true
               enemy[key]['enemy'].flipX = true;
-            } else if (enemy[key]['enemy'].x < enemy[key]['position']['startX'] - 5) {
+            } else if (enemy[key]['enemy'].x < enemy[key]['position']['startX'] - 5 && enemy[key]['health'] > 0) {
               enemy[key]['enemy'].setVelocityX(75)
               goingBackX = true
               enemy[key]['enemy'].flipX = false;
@@ -333,19 +382,20 @@ body {
               // console.log("S", key)
               enemy[key]['enemy'].setVelocityX(0)
               goingBackX = false
+              if (enemy[key]['health'] > 0)
               enemy[key]['enemy'].flipX = false;
             }
           }
           if (enemy[key]['enemy'].y - player.y < 200 && enemy[key]['enemy'].y - player.y > 0 &&
              (player.x - enemy[key]['enemy'].x < 200 && player.x - enemy[key]['enemy'].x > 0 ||
-             enemy[key]['enemy'].x - player.x < 200 && enemy[key]['enemy'].x - player.x > 0)){
+             enemy[key]['enemy'].x - player.x < 200 && enemy[key]['enemy'].x - player.x > 0) && enemy[key]['health'] > 0){
             // console.log("UP")
             enemy[key]['enemy'].setVelocityY(((enemy[key]['enemy'].y - player.y)/2.2)*-1)
             followingY = true
           }
           else if (player.y - enemy[key]['enemy'].y < 200 && player.y - enemy[key]['enemy'].y > 0 &&
              (enemy[key]['enemy'].x - player.x < 200 && enemy[key]['enemy'].x - player.x > 0 ||
-             player.x - enemy[key]['enemy'].x < 200 && player.x - enemy[key]['enemy'].x > 0)){
+             player.x - enemy[key]['enemy'].x < 200 && player.x - enemy[key]['enemy'].x > 0) && enemy[key]['health'] > 0){
             enemy[key]['enemy'].setVelocityY((player.y - enemy[key]['enemy'].y)/2.2)
             followingY = true
             // console.log("DOWN")
@@ -353,10 +403,10 @@ body {
           else {
             enemy[key]['enemy'].setVelocityY(0)
             followingY = false
-            if (enemy[key]['enemy'].y > enemy[key]['position']['startY'] + 5) {
+            if (enemy[key]['enemy'].y > enemy[key]['position']['startY'] + 5 && enemy[key]['health'] > 0) {
               enemy[key]['enemy'].setVelocityY(-75)
               goingBackY = true
-            } else if (enemy[key]['enemy'].y < enemy[key]['position']['startY'] - 5) {
+            } else if (enemy[key]['enemy'].y < enemy[key]['position']['startY'] - 5 && enemy[key]['health'] > 0) {
               enemy[key]['enemy'].setVelocityY(75)
               goingBackY = true
             } else {
@@ -368,11 +418,14 @@ body {
               damage(key, (100-enemy[key]['health'])*-1)
           }
         }
-        if (followingX || followingY || goingBackX || goingBackY) {
+        if (enemy[key]['health'] <= 0) {
+          enemy[key]['enemy'].anims.play('undeadDeath', true);
+        }
+        else if (followingX || followingY || goingBackX || goingBackY) {
           enemy[key]['enemy'].anims.play('undeadWalk', true)
         }
         else {
-          enemy[key]['enemy'].anims.play('undeadStand')
+          enemy[key]['enemy'].anims.play('undeadIdle', true)
         }
         if (enemy[key]['position']['x'] !== enemy[key]['enemy'].x || enemy[key]['position']['y'] !== enemy[key]['enemy'].y) {
           if (followingY || followingX) {
@@ -391,9 +444,10 @@ body {
       }
       for (let key in enemy) {
         if (enemy[key]['health'] <= 0 && enemy[key]['enemy']['active']) {
-          enemy[key]['enemy'].disableBody(true, true)
-          enemy[key]['healthBar'].setScale(0)
-          enemy[key]['healthBarBack'].setScale(0)
+          window.setTimeout(function(){
+            enemy[key]['enemy'].disableBody(true, true)
+            enemy[key]['healthBar'].setScale(0)
+            enemy[key]['healthBarBack'].setScale(0)}, 1200);
         }
         else if (enemy[key]['health'] <= 0 && !enemy[key]['enemy']['active']) {
           enemy[key]['healthBar'].setScale(0)
@@ -413,10 +467,10 @@ body {
         }
         if (quests[i][1] !== quests[i][2]) {
           // If player hasnt done quest yet show this
-          if (quests[i]['active'] === false && quests[i]['completed'] === false) {
+          if (quests[i]['active'] === false && quests[i]['completed'] === false && quests[i]['upTo'] === true) {
             quests[i]['hoverText'].setText("Press E to start quest")
             // If player is in quest and has finished show this
-          } else if (quests[i]['active'] && quests[i]['total'] === 10) {
+          } else if (quests[i]['active'] && quests[i]['total'] === 10 && quests[i]['upTo'] === true) {
             quests[i]['hoverText'].setText("Press E to hand in quest")
           }
           quests[i][2] = quests[i][1];
@@ -433,10 +487,33 @@ body {
         // User is over quest icon and e is pressed
         if (quests[i][3] && gameEdit.input.keyboard.keys[69].isDown) {
           // Quest isnt active and quest hasnt been done
-          if (!quests[i]['active'] && !quests[i]['completed']) {
+          if (!quests[i]['active'] && !quests[i]['completed'] && quests[i]['upTo']) {
             quests[i]['active'] = true;
             quests[i]['hoverText'].setText("")
-            quests[i]['activeText'] = gameEdit.add.text(0, 0, "Kill 10 undead enemies: 0/10", {fontSize: '20px', fill: '#FFF'})
+            // QUEST 1
+            if (i === 1) {
+              console.log("ran")
+              quests[i]['activeText'] = gameEdit.add.text(0, 0, "Kill 10 undead enemies: 0/10", {fontSize: '20px', fill: '#FFF'})
+            // QUEST 2
+            } else if (i === 2 ) {
+              quests[i]['activeText'] = gameEdit.add.text(0, 0, "Collect 10 stars: 0/10", {fontSize: '20px', fill: '#FFF'})
+              q2stars = {}
+              for (let i = 0; i < 10; i++) {
+                q2stars[i] = {}
+                q2stars[i]['f'] = function() {
+                  q2stars[i]['star'].disableBody(true, true);
+                  quests[2]['total'] += 1
+                  quests[2]['activeText'].setText(`Collect 10 stars: ${quests[2]['total']}/10`)
+                  if (quests[2]['total'] === 10) {
+                    quests[2]['activeText'].setText(`Complete! Collect 10 stars: ${quests[2]['total']}/10`)
+                  }
+                }
+                q2stars[i]['star'] = stars.create((Math.random()*850)+50, (Math.random()*800)+200, 'star').setScale(0.3).refreshBody();
+                gameEdit.physics.add.overlap(player, q2stars[i]['star'], q2stars[i]['f'], null, this);
+                // 50x 900 200y 1000
+              }
+            }
+            // QUEST 3
             // Quest is active and quest is complete
           } else if (quests[i]['active'] && quests[i]['total'] === 10) {
             quests[i]['active'] = false;
@@ -444,29 +521,32 @@ body {
             quests[i]['activeText'].setText("")
             quests[i]['hoverText'].setText("")
             questIcons[i].disableBody(true, true)
+            quests[i]['upTo'] = false
+            quests[i+1]['upTo'] = true
+            questIcons[i+1].setScale(1)
             gold += 10
           }
         }
         // Showing quest icon
-        if (!quests[i]['completed']) {
+        if (!quests[i]['completed'] && quests[i]['upTo']) {
           questIcons[i].setScale(1)
         } else {
           questIcons[i].setScale(0)
         }
-        for (let key in enemy) {
-          if (enemyCollide[key][1] !== enemyCollide[key][2]) {
-            enemyCollide[key][2] = enemyCollide[key][1]
-          } else {
-            enemyCollide[key][1] = 0
-          }
-          if (enemyCollide[key][1] === 1) {
-            window.setTimeout(function() {
-              if (enemyCollide[key][1] > 0) {
-                health -= 10;
-                enemyCollide[key][1] = 0
-              }
-            }, 1000)
-          }
+      }
+      for (let key in enemy) {
+        if (enemyCollide[key][1] !== enemyCollide[key][2]) {
+          enemyCollide[key][2] = enemyCollide[key][1]
+        } else {
+          enemyCollide[key][1] = 0
+        }
+        if (enemyCollide[key][1] === 1) {
+          window.setTimeout(function() {
+            if (enemyCollide[key][1] > 0) {
+              health -= 10;
+              enemyCollide[key][1] = 0
+            }
+          }, 1000)
         }
       }
       // If player is over quest icon
@@ -474,6 +554,33 @@ body {
       goldText.setText(`Gold: ${gold}`)
       goldText.x = player.x - 710
       goldText.y = player.y - 380
+      // Player dying
+      if (health <= 0) {
+        deathText.setText("YOU ARE DEAD")
+        deathTextBelow.setText("Press E to respawn")
+        deathText.x = player.x-350
+        deathText.y = player.y-150
+        deathTextBelow.x = player.x-280
+        deathTextBelow.y = player.y-50
+        player.disableBody();
+        player.setScale(0)
+        healthBar.setScale(0)
+        healthBarBack.setScale(0)
+        playerNameText.setText("")
+        playerDead = true
+        if (gameEdit.input.keyboard.keys[69].isDown) {
+          health = 100
+          player.enableBody();
+          player.setScale(1)
+          healthBar.setScale(1)
+          healthBarBack.setScale(1)
+          playerNameText.setText('<%= @current_character.name %>')
+          deathText.setText("")
+          deathTextBelow.setText("")
+          player.x = 400
+          player.y = 490
+        }
+      }
     }
     function attack() {
       if (cursors.space.isDown) {
@@ -487,6 +594,9 @@ body {
     function quest1Touch() {
       quests[1][1] += 1
     }
+    function quest2Touch() {
+      quests[2][1] += 1
+    }
     function damage(id, enemyDamage) {
       App.enemy.create(id, enemyDamage, 0, 0, 'damage', currentCharacter)
     }
@@ -497,6 +607,7 @@ body {
     window.setInterval(function() {
       App.item.create(gold, currentCharacter, xPos, yPos, direction, health)
     }, 1000)
+
 </script>
 
 

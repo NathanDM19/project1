@@ -31,10 +31,15 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
         enemy[data['enemyId']]['enemy'].y = data['y']
         enemy[data['enemyId']]['following'] = data['enemyDamage']
       }
-      enemy[data['enemyId']]['enemy'].anims.play('undeadWalk', true)
+      if (enemy[data['enemyId']]['health'] > 0) {
+        enemy[data['enemyId']]['enemy'].anims.play('undeadWalk', true)
+      }
       if (data['enemyDamage'] === -1) {
-        enemy[data['enemyId']]['enemy'].anims.play('undeadStand')
+        enemy[data['enemyId']]['enemy'].anims.play('undeadIdle', true)
         enemy[data['enemyId']]['following'] = 0
+      }
+      if (enemy[data['enemyId']]['heath'] <= 0) {
+        enemy[data['enemyId']]['enemy'].anims.play('undeadDeath', true);
       }
     }
     if (data['actionName'] === 'create' && data['char'] === currentCharacter) { // NO ENEMIES
@@ -82,16 +87,19 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
         enemyCollide[id] = {}
         enemyCollide[id][2] = 0
         enemy[id]['attack'] = function() {
-          // console.log({enemy: id, thisid: this.id, enemy });
-          enemyCollide[id]['collide'] = true
-          enemyCollide[id][1] += 1
+          enemyCollide[this.id]['collide'] = true
+          enemyCollide[this.id][1] += 1
           if (cursors.space.isDown) {
-            spacePressed = true
-          } else if(spacePressed) {
+            if (!spacePressed) {
+              enemyDamage = 10
+              damage(this.id, enemyDamage)
+              spacePressed = true
+            }
+          } else if(cursors.space.isUp) {
+            enemy[this.id]['enemy'].anims.play('undeadDamage', true)
             spacePressed = false;
-            enemyDamage = 10
-            console.log("attacked "+this.id)
-            damage(this.id, enemyDamage)
+            // enemyDamage = 10
+            // damage(this.id, enemyDamage)
           }
         }
         enemy[id]['attack']['id'] = id
