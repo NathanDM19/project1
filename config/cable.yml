@@ -8,3 +8,6 @@ production:
   adapter: redis
   url: redis://redistogo:b0b57c454e78b277b22e5b59f41ea82c@cod.redistogo.com:10136/
   channel_prefix: project1_production
+
+
+# redis://redistogo:b0b57c454e78b277b22e5b59f41ea82c@cod.redistogo.com:10136/
