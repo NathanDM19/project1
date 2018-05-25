@@ -1,7 +1,7 @@
 <style>
 body {
   position: absolute;
-  top: -130px;
+  top: -160px;
 }
 </style>
 <script>
@@ -72,7 +72,7 @@ body {
       this.load.spritesheet('undead', 'assets/enemies/undeadWalk.png', { frameWidth: 56, frameHeight: 48});
       this.load.spritesheet('undeadDeath', 'assets/enemies/undeadDeath.png', { frameWidth: 72, frameHeight: 32});
       this.load.spritesheet('undeadIdle', 'assets/enemies/undeadIdle.png', { frameWidth: 48, frameHeight: 32});
-      this.load.spritesheet('undeadDamage', 'assets/enemies/undeadDamage.png', {frameWidth: 48, frameHeight: 32});
+      this.load.spritesheet('undeadDamage', 'assets/enemies/undeadDamage.png', {frameWidth: 56, frameHeight: 48});
       this.load.image('questIcon', 'assets/questIcon.png');
       this.load.image('star', 'assets/star.png')
       gameEdit = this
@@ -200,6 +200,8 @@ body {
       this.anims.create({
         key: 'undeadDamage',
         frames: this.anims.generateFrameNumbers('undeadDamage', {start: 0, end: 15}),
+        frameRate: 16,
+        repeat: -1
       })
       // Adding keyboard functionality
       cursors = this.input.keyboard.createCursorKeys();
@@ -348,84 +350,98 @@ body {
         let followingY
         let goingBackX
         let goingBackY
-        if (enemy[key]['following'] === 0 || enemy[key]['following'] === currentCharacter) {
-          if (enemy[key]['enemy'].x - player.x < 200 && enemy[key]['enemy'].x - player.x > 0 &&
-             (enemy[key]['enemy'].y - player.y < 200 && enemy[key]['enemy'].y - player.y > 0 ||
-             player.y - enemy[key]['enemy'].y < 200 && player.y - enemy[key]['enemy'].y > 0) && enemy[key]['health'] > 0){
-            enemy[key]['enemy'].setVelocityX(((enemy[key]['enemy'].x - player.x)/2.2)*-1)
-            followingX = true
-            enemy[key]['enemy'].flipX = true;
-            // console.log("LEFT")
+        if (enemy[key]['pause'] === true) {
+          enemy[key]['enemy'].setVelocityX(0)
+          enemy[key]['enemy'].setVelocityX(0)
+          if (enemy[key]['health'] <= 0) {
+            enemy[key]['enemy'].anims.play('undeadDeath', true)
+          } else {
+            enemy[key]['enemy'].anims.play('undeadDamage', true)
           }
-          else if (player.x - enemy[key]['enemy'].x < 200 && player.x - enemy[key]['enemy'].x > 0 &&
-          (enemy[key]['enemy'].y - player.y < 200 && enemy[key]['enemy'].y - player.y > 0 ||
-          player.y - enemy[key]['enemy'].y < 200 && player.y - enemy[key]['enemy'].y > 0) && enemy[key]['health'] > 0) {
-            enemy[key]['enemy'].setVelocityX((player.x - enemy[key]['enemy'].x)/2.2)
-            followingX = true
-            enemy[key]['enemy'].flipX = false;
-            // console.log("RIGHT")
-          }
-          else {
-            enemy[key]['enemy'].setVelocityX(0)
-            followingX = false
-            if (enemy[key]['enemy'].x > enemy[key]['position']['startX'] + 5 && enemy[key]['health'] > 0) {
-              enemy[key]['enemy'].setVelocityX(-75)
-              goingBackX = true
-              enemy[key]['enemy'].flipX = true;
-            } else if (enemy[key]['enemy'].x < enemy[key]['position']['startX'] - 5 && enemy[key]['health'] > 0) {
-              enemy[key]['enemy'].setVelocityX(75)
-              goingBackX = true
-              enemy[key]['enemy'].flipX = false;
-
-            }
-            else {
-              // console.log("S", key)
-              enemy[key]['enemy'].setVelocityX(0)
-              goingBackX = false
-              if (enemy[key]['health'] > 0)
-              enemy[key]['enemy'].flipX = false;
-            }
-          }
-          if (enemy[key]['enemy'].y - player.y < 200 && enemy[key]['enemy'].y - player.y > 0 &&
-             (player.x - enemy[key]['enemy'].x < 200 && player.x - enemy[key]['enemy'].x > 0 ||
-             enemy[key]['enemy'].x - player.x < 200 && enemy[key]['enemy'].x - player.x > 0) && enemy[key]['health'] > 0){
-            // console.log("UP")
-            enemy[key]['enemy'].setVelocityY(((enemy[key]['enemy'].y - player.y)/2.2)*-1)
-            followingY = true
-          }
-          else if (player.y - enemy[key]['enemy'].y < 200 && player.y - enemy[key]['enemy'].y > 0 &&
-             (enemy[key]['enemy'].x - player.x < 200 && enemy[key]['enemy'].x - player.x > 0 ||
-             player.x - enemy[key]['enemy'].x < 200 && player.x - enemy[key]['enemy'].x > 0) && enemy[key]['health'] > 0){
-            enemy[key]['enemy'].setVelocityY((player.y - enemy[key]['enemy'].y)/2.2)
-            followingY = true
-            // console.log("DOWN")
-          }
-          else {
-            enemy[key]['enemy'].setVelocityY(0)
-            followingY = false
-            if (enemy[key]['enemy'].y > enemy[key]['position']['startY'] + 5 && enemy[key]['health'] > 0) {
-              enemy[key]['enemy'].setVelocityY(-75)
-              goingBackY = true
-            } else if (enemy[key]['enemy'].y < enemy[key]['position']['startY'] - 5 && enemy[key]['health'] > 0) {
-              enemy[key]['enemy'].setVelocityY(75)
-              goingBackY = true
-            } else {
-              enemy[key]['enemy'].setVelocityY(0)
-              goingBackY = false
-            }
-          }
-          if (enemy[key]['enemy'].x - enemy[key]['position']['startX'] < 7 && enemy[key]['enemy'].x - enemy[key]['position']['startX'] > -7 && enemy[key]['enemy'].y - enemy[key]['position']['startY'] < 7 && enemy[key]['enemy'].y - enemy[key]['position']['startY'] > -7 && (goingBackY || goingBackX)) {
-              damage(key, (100-enemy[key]['health'])*-1)
-          }
-        }
-        if (enemy[key]['health'] <= 0) {
-          enemy[key]['enemy'].anims.play('undeadDeath', true);
-        }
-        else if (followingX || followingY || goingBackX || goingBackY) {
-          enemy[key]['enemy'].anims.play('undeadWalk', true)
         }
         else {
-          enemy[key]['enemy'].anims.play('undeadIdle', true)
+          if (enemy[key]['following'] === 0 || enemy[key]['following'] === currentCharacter) {
+            if (enemy[key]['enemy'].x - player.x < 200 && enemy[key]['enemy'].x - player.x > 0 &&
+               (enemy[key]['enemy'].y - player.y < 200 && enemy[key]['enemy'].y - player.y > 0 ||
+               player.y - enemy[key]['enemy'].y < 200 && player.y - enemy[key]['enemy'].y > 0) && enemy[key]['health'] > 0){
+              enemy[key]['enemy'].setVelocityX(((enemy[key]['enemy'].x - player.x)/2.2)*-1)
+              followingX = true
+              enemy[key]['enemy'].flipX = true;
+              // console.log("LEFT")
+            }
+            else if (player.x - enemy[key]['enemy'].x < 200 && player.x - enemy[key]['enemy'].x > 0 &&
+            (enemy[key]['enemy'].y - player.y < 200 && enemy[key]['enemy'].y - player.y > 0 ||
+            player.y - enemy[key]['enemy'].y < 200 && player.y - enemy[key]['enemy'].y > 0) && enemy[key]['health'] > 0) {
+              enemy[key]['enemy'].setVelocityX((player.x - enemy[key]['enemy'].x)/2.2)
+              followingX = true
+              enemy[key]['enemy'].flipX = false;
+              // console.log("RIGHT")
+            }
+            else {
+              enemy[key]['enemy'].setVelocityX(0)
+              followingX = false
+              if (enemy[key]['enemy'].x > enemy[key]['position']['startX'] + 5 && enemy[key]['health'] > 0) {
+                enemy[key]['enemy'].setVelocityX(-75)
+                goingBackX = true
+                enemy[key]['enemy'].flipX = true;
+              } else if (enemy[key]['enemy'].x < enemy[key]['position']['startX'] - 5 && enemy[key]['health'] > 0) {
+                enemy[key]['enemy'].setVelocityX(75)
+                goingBackX = true
+                enemy[key]['enemy'].flipX = false;
+
+              }
+              else {
+                // console.log("S", key)
+                enemy[key]['enemy'].setVelocityX(0)
+                goingBackX = false
+                if (enemy[key]['health'] > 0)
+                enemy[key]['enemy'].flipX = false;
+              }
+            }
+            if (enemy[key]['enemy'].y - player.y < 200 && enemy[key]['enemy'].y - player.y > 0 &&
+               (player.x - enemy[key]['enemy'].x < 200 && player.x - enemy[key]['enemy'].x > 0 ||
+               enemy[key]['enemy'].x - player.x < 200 && enemy[key]['enemy'].x - player.x > 0) && enemy[key]['health'] > 0){
+              // console.log("UP")
+              enemy[key]['enemy'].setVelocityY(((enemy[key]['enemy'].y - player.y)/2.2)*-1)
+              followingY = true
+            }
+            else if (player.y - enemy[key]['enemy'].y < 200 && player.y - enemy[key]['enemy'].y > 0 &&
+               (enemy[key]['enemy'].x - player.x < 200 && enemy[key]['enemy'].x - player.x > 0 ||
+               player.x - enemy[key]['enemy'].x < 200 && player.x - enemy[key]['enemy'].x > 0) && enemy[key]['health'] > 0){
+              enemy[key]['enemy'].setVelocityY((player.y - enemy[key]['enemy'].y)/2.2)
+              followingY = true
+              // console.log("DOWN")
+            }
+            else {
+              enemy[key]['enemy'].setVelocityY(0)
+              followingY = false
+              if (enemy[key]['enemy'].y > enemy[key]['position']['startY'] + 5 && enemy[key]['health'] > 0) {
+                enemy[key]['enemy'].setVelocityY(-75)
+                goingBackY = true
+              } else if (enemy[key]['enemy'].y < enemy[key]['position']['startY'] - 5 && enemy[key]['health'] > 0) {
+                enemy[key]['enemy'].setVelocityY(75)
+                goingBackY = true
+              } else {
+                enemy[key]['enemy'].setVelocityY(0)
+                goingBackY = false
+              }
+            }
+            if (enemy[key]['enemy'].x - enemy[key]['position']['startX'] < 6 && enemy[key]['enemy'].x - enemy[key]['position']['startX'] > -6 && enemy[key]['enemy'].y - enemy[key]['position']['startY'] < 6 && enemy[key]['enemy'].y - enemy[key]['position']['startY'] > -6 && (goingBackY || goingBackX)) {
+              console.log(enemy[key]['health'])
+              damage(key, -100+enemy[key]['health'])
+            }
+          }
+        }
+        if (!enemy[key]['pause']) {
+          if (enemy[key]['health'] <= 0) {
+            enemy[key]['enemy'].anims.play('undeadDeath', true);
+          }
+          else if (followingX || followingY || goingBackX || goingBackY) {
+            enemy[key]['enemy'].anims.play('undeadWalk', true)
+          }
+          else {
+            enemy[key]['enemy'].anims.play('undeadIdle', true)
+          }
         }
         if (enemy[key]['position']['x'] !== enemy[key]['enemy'].x || enemy[key]['position']['y'] !== enemy[key]['enemy'].y) {
           if (followingY || followingX) {

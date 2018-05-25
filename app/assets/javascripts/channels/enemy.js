@@ -32,14 +32,14 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
         enemy[data['enemyId']]['following'] = data['enemyDamage']
       }
       if (enemy[data['enemyId']]['health'] > 0) {
-        enemy[data['enemyId']]['enemy'].anims.play('undeadWalk', true)
+        // enemy[data['enemyId']]['enemy'].anims.play('undeadWalk', true)
       }
       if (data['enemyDamage'] === -1) {
-        enemy[data['enemyId']]['enemy'].anims.play('undeadIdle', true)
+        // enemy[data['enemyId']]['enemy'].anims.play('undeadIdle', true)
         enemy[data['enemyId']]['following'] = 0
       }
       if (enemy[data['enemyId']]['heath'] <= 0) {
-        enemy[data['enemyId']]['enemy'].anims.play('undeadDeath', true);
+        // enemy[data['enemyId']]['enemy'].anims.play('undeadDeath', true);
       }
     }
     if (data['actionName'] === 'create' && data['char'] === currentCharacter) { // NO ENEMIES
@@ -84,6 +84,7 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
         enemy[id]['healthBarBack'].y = enemy[id]['enemy'].y - 36
         enemy[id]['healthBar'].x = enemy[id]['enemy'].x
         enemy[id]['healthBar'].y = enemy[id]['enemy'].y - 36
+        enemy[id]['pause'] = false
         enemyCollide[id] = {}
         enemyCollide[id][2] = 0
         enemy[id]['attack'] = function() {
@@ -91,15 +92,18 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
           enemyCollide[this.id][1] += 1
           if (cursors.space.isDown) {
             if (!spacePressed) {
+              console.log("RUN")
               enemyDamage = 10
               damage(this.id, enemyDamage)
               spacePressed = true
+              enemy[this.id]['pause'] = true;
+              test = this.id
+              window.setTimeout(function() {
+                enemy[test]['pause'] = false
+              }, 1000)
             }
           } else if(cursors.space.isUp) {
-            enemy[this.id]['enemy'].anims.play('undeadDamage', true)
             spacePressed = false;
-            // enemyDamage = 10
-            // damage(this.id, enemyDamage)
           }
         }
         enemy[id]['attack']['id'] = id

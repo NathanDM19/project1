@@ -7,11 +7,13 @@
     <%= action_cable_meta_tag %>
     <%= stylesheet_link_tag    'application', media: 'all' %>
     <%= javascript_include_tag 'application' %>
+    <link href="https://fonts.googleapis.com/css?family=Varela+Round" rel="stylesheet">
   </head>
 
   <body>
-    <h1>Game</h1>
+    <h1>Nathan's RPG</h1>
     <hr>
+    <div id="topDiv">
     <% if @current_user.present? %>
       Welcome <%= link_to @current_user.username, profile_path %>
       |
@@ -30,7 +32,8 @@
       |
       <%= link_to "Sign Up", new_user_path %>
     <% end %>
-    <hr>
+  </div>
+    <hr id="botHr">
     <%= yield %>
   </body>
 </html>
