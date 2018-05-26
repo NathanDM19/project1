@@ -272,7 +272,7 @@ body {
       healthBar.x = player.x - ((100-health)/4)
       healthBar.y = player.y - 36
 
-      if (x > xTemp+3 || x < xTemp-3 || y > yTemp+3 || y < yTemp-3 || direction !== directionTemp || health !== healthTemp) {
+      if (x > xTemp+2 || x < xTemp-2 || y > yTemp+2 || y < yTemp-2 || direction !== directionTemp || health !== healthTemp) {
         App.general.create('character', {gold, 'char': currentCharacter, 'x': x, 'y': y, direction, health})
         xTemp = x
         yTemp = y
@@ -410,7 +410,7 @@ body {
         else {
           enemy[key]['enemy'].anims.play('undeadIdle', true)
         }
-        if (enemy[key]['position']['x'] > enemy[key]['enemy'].x+4 || enemy[key]['position']['x'] < enemy[key]['enemy'].x-4 || enemy[key]['position']['y'] > enemy[key]['enemy'].y+4 || enemy[key]['position']['y'] < enemy[key]['enemy'].y-4) {
+        if (enemy[key]['position']['x'] > enemy[key]['enemy'].x+2 || enemy[key]['position']['x'] < enemy[key]['enemy'].x-2 || enemy[key]['position']['y'] > enemy[key]['enemy'].y+2 || enemy[key]['position']['y'] < enemy[key]['enemy'].y-2) {
           if (followingY || followingX) {
             followingBoo[key] = true
             enemy[key]['position']['x'] = enemy[key]['enemy'].x
