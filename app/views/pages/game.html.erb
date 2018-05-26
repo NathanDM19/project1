@@ -28,14 +28,13 @@ body {
     let aliveEnemy = {}
     let enemy = {}
     let enemyCounter = 0
-    let enemyId = <%= Enemy.last.id + 1 %>
     let enemies = 4
     let health = 100;
     let speed = 5;
-    let xPos = 0;
-    let yPos = 0;
-    let xPosTemp = 0;
-    let yPosTemp = 0;
+    let x = 0;
+    let y = 0;
+    let xTemp = 0;
+    let yTemp = 0;
     let direction = 'turn'
     let directionTemp;
     let player
@@ -95,7 +94,7 @@ body {
       platforms.create(18, 274, 'platform').setScale(0.05, 0.1).refreshBody()
       platforms.create(352, 294, 'platform').setScale(0.1, 0.1).refreshBody()
       platforms.create(400, 165, 'platform').setScale(5, 0.1).refreshBody()
-      platforms.create(483, 296, 'platform').setScale(0.2, 0.1).refreshBody()
+      platforms.create(483, 294, 'platform').setScale(0.2, 0.1).refreshBody()
       platforms.create(654, 250, 'platform').setScale(0.01, 3).refreshBody()
       platforms.create(653, 550, 'platform').setScale(1.04, 0.1).refreshBody()
       platforms.create(1130, 195, 'platform').setScale(2.33, 0.11).refreshBody()
@@ -216,7 +215,6 @@ body {
         if (enemyObject[key]['total'] !== 0) {
           console.log("loading enemy with" + enemyObject[key]['id'])
           App.general.create('login', {'enemyId': enemyObject[key]['id'], 'enemyType': enemyObject[key]['total'], 'x': enemyObject[key]['x'], 'y': enemyObject[key]['y'], 'char': currentCharacter})
-          enemyId -= 1
         }
       }
       gameEdit.input.keyboard.addKeys(
@@ -225,7 +223,6 @@ body {
       );
     }
     function update() {
-      // Things that will happen after game initially loads
       // Movement for player
       for (let key in playerDetails) {
         if (parseInt(key) !== currentCharacter) {
@@ -237,7 +234,7 @@ body {
             gameEdit.physics.add.collider(playerSprites[`player${key}`], platforms);
             playerCreated[key] = true
           }
-          if (playerSprites[`player${key}`].x !== playerDetails[key]['xPos'] || playerSprites[`player${key}`].y !== playerDetails[key]['yPos'] || playerDetails[key]['xPos'] - ((100-playerDetails[key]['health'])/4) !== playerHealthBar[`player${key}`].x || playerDetails[key]['direction'] !== playerDetails[key]['tempDirection']) {
+          if (playerSprites[`player${key}`].x !== playerDetails[key]['x'] || playerSprites[`player${key}`].y !== playerDetails[key]['y'] || playerDetails[key]['x'] - ((100-playerDetails[key]['health'])/4) !== playerHealthBar[`player${key}`].x || playerDetails[key]['direction'] !== playerDetails[key]['tempDirection']) {
             if (playerDetails[key]['health'] === 0) {
               playerHealthBarBack[`player${key}`].setScale(0);
               playerHealthBar[`player${key}`].setScale(0);
@@ -246,27 +243,27 @@ body {
               playerNames[`player${key}`].setText("");
             } else {
               playerDetails[key]['tempDirection'] = playerDetails[key]['direction']
-              playerSprites[`player${key}`].x = playerDetails[key]['xPos'];
-              playerSprites[`player${key}`].y = playerDetails[key]['yPos'];
+              playerSprites[`player${key}`].x = playerDetails[key]['x'];
+              playerSprites[`player${key}`].y = playerDetails[key]['y'];
               playerSprites[`player${key}`].anims.play(playerDetails[key]['direction'], true);
               if (playerDetails[key]['direction'] === 'left') {
                 playerSprites[`player${key}`].flipX = true
               } else if (playerDetails[key]['direction'] === 'right') {
                 playerSprites[`player${key}`].flipX = false
               }
-              playerNames[`player${key}`].x = playerDetails[key]['xPos'] - 27;
-              playerNames[`player${key}`].y = playerDetails[key]['yPos'] - 57;
-              playerHealthBarBack[`player${key}`].x = playerDetails[key]['xPos'];
-              playerHealthBarBack[`player${key}`].y = playerDetails[key]['yPos'] - 36;
+              playerNames[`player${key}`].x = playerDetails[key]['x'] - 27;
+              playerNames[`player${key}`].y = playerDetails[key]['y'] - 57;
+              playerHealthBarBack[`player${key}`].x = playerDetails[key]['x'];
+              playerHealthBarBack[`player${key}`].y = playerDetails[key]['y'] - 36;
               playerHealthBar[`player${key}`].setScale(playerDetails[key]['health']/100, 1);
-              playerHealthBar[`player${key}`].x = playerDetails[key]['xPos'] - ((100-playerDetails[key]['health'])/4);
-              playerHealthBar[`player${key}`].y = playerDetails[key]['yPos'] - 36;
+              playerHealthBar[`player${key}`].x = playerDetails[key]['x'] - ((100-playerDetails[key]['health'])/4);
+              playerHealthBar[`player${key}`].y = playerDetails[key]['y'] - 36;
             }
           }
         }
       }
-      xPos = player.x
-      yPos = player.y
+      x = player.x
+      y = player.y
       playerNameText.x = player.x - 27
       playerNameText.y = player.y - 57
       healthBarBack.x = player.x
@@ -275,10 +272,10 @@ body {
       healthBar.x = player.x - ((100-health)/4)
       healthBar.y = player.y - 36
 
-      if (xPos !== xPosTemp || yPos !== yPosTemp || direction !== directionTemp || health !== healthTemp) {
-        App.general.create('character', {gold, 'char': currentCharacter, 'x': xPos, 'y': yPos, direction, health})
-        xPosTemp = xPos
-        yPosTemp = yPos
+      if (x > xTemp+8 || x < xTemp-8 || y > yTemp+8 || y < yTemp-8 || direction !== directionTemp || health !== healthTemp) {
+        App.general.create('character', {gold, 'char': currentCharacter, 'x': x, 'y': y, direction, health})
+        xTemp = x
+        yTemp = y
         directionTemp = direction
         healthTemp = health
       }
@@ -296,8 +293,7 @@ body {
         player.anims.play('right', true);
         player.flipX = false;
       }
-      if (cursors.up.isDown)
-      {
+      if (cursors.up.isDown) {
         if (cursors.left.isUp && cursors.right.isUp) {
           direction = 'turn'
           player.anims.play('right', true);
@@ -399,7 +395,7 @@ body {
               goingBackY = false
             }
           }
-          if (enemy[key]['enemy'].x - enemy[key]['position']['startX'] < 6 && enemy[key]['enemy'].x - enemy[key]['position']['startX'] > -6 && enemy[key]['enemy'].y - enemy[key]['position']['startY'] < 6 && enemy[key]['enemy'].y - enemy[key]['position']['startY'] > -6 && (goingBackY || goingBackX)) {
+          if (enemy[key]['enemy'].x - enemy[key]['position']['startX'] < 10 && enemy[key]['enemy'].x - enemy[key]['position']['startX'] > -10 && enemy[key]['enemy'].y - enemy[key]['position']['startY'] < 10 && enemy[key]['enemy'].y - enemy[key]['position']['startY'] > -10 && (goingBackY || goingBackX)) {
             enemy[key]['health'] = 100
             enemy[key]['healthBar'].setScale(enemy[key]['health']/100, 1)
             App.general.create('enemyReset', {'enemyId': key, 'char': currentCharacter})
@@ -414,31 +410,45 @@ body {
         else {
           enemy[key]['enemy'].anims.play('undeadIdle', true)
         }
-        if (enemy[key]['position']['x'] !== enemy[key]['enemy'].x || enemy[key]['position']['y'] !== enemy[key]['enemy'].y) {
+        if (enemy[key]['position']['x'] > enemy[key]['enemy'].x+8 || enemy[key]['position']['x'] < enemy[key]['enemy'].x-8 || enemy[key]['position']['y'] > enemy[key]['enemy'].y+8 || enemy[key]['position']['y'] < enemy[key]['enemy'].y-8) {
           if (followingY || followingX) {
             followingBoo[key] = true
+            enemy[key]['position']['x'] = enemy[key]['enemy'].x
+            enemy[key]['position']['y'] = enemy[key]['enemy'].y
+            enemy[key]['following'] = currentCharacter
             App.general.create('move', {'enemyId': key, 'x': enemy[key]['enemy'].x, 'y': enemy[key]['enemy'].y, 'char': currentCharacter})
           }
         }
         if (followingBoo[key] && !followingY && !followingX) {
           followingBoo[key] = false
-          App.general.create('move', {'enemyId': key, 'x': enemy[key]['enemy'].x, 'y': enemy[key]['enemy'].y, 'char': currentCharacter})
+          App.general.create('move', {'enemyId': key, 'x': enemy[key]['enemy'].x, 'y': enemy[key]['enemy'].y, 'char': -1})
         }
         enemy[key]['healthBarBack'].x = enemy[key]['enemy'].x
         enemy[key]['healthBarBack'].y = enemy[key]['enemy'].y - 36
         enemy[key]['healthBar'].x = enemy[key]['enemy'].x - ((100-enemy[key]['health'])/4)
         enemy[key]['healthBar'].y = enemy[key]['enemy'].y - 36
-      }
-      for (let key in enemy) {
         if (enemy[key]['health'] <= 0 && enemy[key]['enemy']['active']) {
           window.setTimeout(function(){
             enemy[key]['enemy'].disableBody(true, true)
             enemy[key]['healthBar'].setScale(0)
             enemy[key]['healthBarBack'].setScale(0)}, 1200);
-        }
-        else if (enemy[key]['health'] <= 0 && !enemy[key]['enemy']['active']) {
-          enemy[key]['healthBar'].setScale(0)
-        }
+          }
+          else if (enemy[key]['health'] <= 0 && !enemy[key]['enemy']['active']) {
+            enemy[key]['healthBar'].setScale(0)
+          }
+          if (enemyCollide[key][1] !== enemyCollide[key][2]) {
+            enemyCollide[key][2] = enemyCollide[key][1]
+          } else {
+            enemyCollide[key][1] = 0
+          }
+          if (enemyCollide[key][1] === 1) {
+            window.setTimeout(function() {
+              if (enemyCollide[key][1] > 0) {
+                health -= 10;
+                enemyCollide[key][1] = 0
+              }
+            }, 1000)
+          }
       }
       // QUESTS
       // Makes quest information follow player
@@ -479,7 +489,6 @@ body {
             quests[i]['hoverText'].setText("")
             // QUEST 1
             if (i === 1) {
-              console.log("ran")
               quests[i]['activeText'] = gameEdit.add.text(0, 0, "Kill 10 undead enemies: 0/10", {fontSize: '20px', fill: '#FFF'})
             // QUEST 2
             } else if (i === 2 ) {
@@ -520,21 +529,6 @@ body {
           questIcons[i].setScale(1)
         } else {
           questIcons[i].setScale(0)
-        }
-      }
-      for (let key in enemy) {
-        if (enemyCollide[key][1] !== enemyCollide[key][2]) {
-          enemyCollide[key][2] = enemyCollide[key][1]
-        } else {
-          enemyCollide[key][1] = 0
-        }
-        if (enemyCollide[key][1] === 1) {
-          window.setTimeout(function() {
-            if (enemyCollide[key][1] > 0) {
-              health -= 10;
-              enemyCollide[key][1] = 0
-            }
-          }, 1000)
         }
       }
       // If player is over quest icon
@@ -588,12 +582,8 @@ body {
     function damage(id, enemyDamage) {
       App.general.create('damage', {'enemyId': id, 'damage': enemyDamage, 'char': currentCharacter})
     }
-    function databaseEnemy(x, y, enemyType) {
-      console.log("Creating database entry for "+enemyId)
-      App.general.create('database', {enemyId, enemyType, x, y, 'char': currentCharacter})
-    }
     window.setInterval(function() {
-        App.general.create('character', {gold, 'char': currentCharacter, 'x': xPos, 'y': yPos, direction, health})}, 1000)
+        App.general.create('character', {gold, 'char': currentCharacter, 'x': x, 'y': y, direction, health})}, 1000)
 
 </script>
 

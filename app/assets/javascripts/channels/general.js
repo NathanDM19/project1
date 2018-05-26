@@ -7,11 +7,7 @@ App.general = App.cable.subscriptions.create('GeneralChannel', {
       createEnemy(data['x'], data['y'], data['enemyType'], data['enemyId'], data['health']) // x y enemyId, enemyType
     }
     else if (data['type'] === 'create') {
-      createEnemy(data['x'], data['y'], data['enemyType'])
-      console.log("ran")
-      if (data['char'] === currentCharacter) {
-        databaseEnemy(data['x'], data['y'], data['enemyType'])
-      }
+      createEnemy(data['x'], data['y'], data['enemyType'], data['enemyId'])
     }
     else if (data['type'] === 'enemyReset' && data['char'] !== currentCharacter) {
       enemy[data['enemyId']]['health'] = 100
@@ -35,9 +31,7 @@ App.general = App.cable.subscriptions.create('GeneralChannel', {
       if (enemy[data['enemyId']]['health'] <= 0 && data['killed']) {
         for (let i = 1; i <= enemies; i++) {
           if (data['y'] === i && data['char'] === currentCharacter) {
-            window.setTimeout(function() {
-              App.general.create('create', {enemyId, 'enemyType': i, 'char': data['char']})
-            }, 20000)
+              App.general.create('create', {'enemyType': i, 'char': data['char']})
             if (quests[1]['active'] && quests[1]['total'] < 10) {
               quests[1]['total'] += 1;
               quests[1]['activeText'].setText(`Kill 10 undead enemies: ${quests[1]['total']}/10`)
@@ -50,7 +44,7 @@ App.general = App.cable.subscriptions.create('GeneralChannel', {
       }
     }
     else if (data['type'] === 'character') {
-      playerDetails[ data['char'] ] = {'xPos': data['x'], 'yPos': data['y'], 'direction': data['direction'], name: data['name'], health: data['health']}
+      playerDetails[ data['char'] ] = {'x': data['x'], 'y': data['y'], 'direction': data['direction'], name: data['name'], health: data['health']}
     }
     function createEnemy(x, y, enemyType, localEnemyId, health) {
       if (localEnemyId) {
@@ -79,7 +73,7 @@ App.general = App.cable.subscriptions.create('GeneralChannel', {
         } else {
           enemy[id]['health'] = 100
         }
-        enemy[data['enemyId']]['healthBar'].setScale(enemy[data['enemyId']]['health']/100, 1)
+        enemy[id]['healthBar'].setScale(enemy[data['enemyId']]['health']/100, 1)
         enemy[id]['enemy'].body.setSize(32, 48)
         enemy[id]['healthBarBack'].x = enemy[id]['enemy'].x
         enemy[id]['healthBarBack'].y = enemy[id]['enemy'].y - 36
@@ -104,7 +98,6 @@ App.general = App.cable.subscriptions.create('GeneralChannel', {
         enemy[id]['attack']['id'] = id
         gameEdit.physics.add.collider(player, enemy[id]['enemy'], enemy[id]['attack'])
         gameEdit.physics.add.collider(enemy[id]['enemy'], platforms)
-        enemyId += 1
       }
     }
   },
