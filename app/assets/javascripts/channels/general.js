@@ -1,16 +1,42 @@
 this.App = {};
 
 App.cable = ActionCable.createConsumer();
-App.enemy = App.cable.subscriptions.create('EnemyChannel', {
+App.general = App.cable.subscriptions.create('GeneralChannel', {
   received: function(data) {
-    if (data['actionName'] === 'damage') { // damage
-      enemy[data['enemyId']]['health'] -= data['enemyDamage']
+    if (data['type'] === 'login' && data['char'] === currentCharacter) { // LOGIN
+      createEnemy(data['x'], data['y'], data['enemyType'], data['enemyId'], data['health']) // x y enemyId, enemyType
+    }
+    else if (data['type'] === 'create') {
+      createEnemy(data['x'], data['y'], data['enemyType'])
+      console.log("ran")
+      if (data['char'] === currentCharacter) {
+        databaseEnemy(data['x'], data['y'], data['enemyType'])
+      }
+    }
+    else if (data['type'] === 'enemyReset' && data['char'] !== currentCharacter) {
+      enemy[data['enemyId']]['health'] = 100
       enemy[data['enemyId']]['healthBar'].setScale(enemy[data['enemyId']]['health']/100, 1)
-      if (enemy[data['enemyId']]['health'] <= 0 && data['x'] === 1) {
+    }
+    else if (data['type'] === 'move') {
+      if (data['char'] !== currentCharacter) {
+        enemy[data['enemyId']]['position']['x'] = data['x']
+        enemy[data['enemyId']]['position']['y'] = data['y']
+        enemy[data['enemyId']]['enemy'].x = data['x']
+        enemy[data['enemyId']]['enemy'].y = data['y']
+        enemy[data['enemyId']]['following'] = data['char']
+      }
+      if (data['char'] === -1) {
+        enemy[data['enemyId']]['following'] = 0
+      }
+    }
+    else if (data['type'] === 'damage') { // damage
+      enemy[data['enemyId']]['health'] -= data['damage']
+      enemy[data['enemyId']]['healthBar'].setScale(enemy[data['enemyId']]['health']/100, 1)
+      if (enemy[data['enemyId']]['health'] <= 0 && data['killed']) {
         for (let i = 1; i <= enemies; i++) {
           if (data['y'] === i && data['char'] === currentCharacter) {
             window.setTimeout(function() {
-              App.enemy.create(enemyId, i, 0, 0, 'create', data['char'])
+              App.general.create('create', {enemyId, 'enemyType': i, 'char': data['char']})
             }, 20000)
             if (quests[1]['active'] && quests[1]['total'] < 10) {
               quests[1]['total'] += 1;
@@ -23,37 +49,8 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
         }
       }
     }
-    if (data['actionName'] === 'enemyReset') {
-      enemy[data['enemyId']]['health'] = 100
-      enemy[data['enemyId']]['healthBar'].setScale(enemy[data['enemyId']]['health']/100, 1)
-    }
-    if (data['actionName'] === 'move') {
-      if (data['enemyDamage'] !== currentCharacter) {
-        enemy[data['enemyId']]['position']['x'] = data['x']
-        enemy[data['enemyId']]['position']['y'] = data['y']
-        enemy[data['enemyId']]['enemy'].x = data['x']
-        enemy[data['enemyId']]['enemy'].y = data['y']
-        enemy[data['enemyId']]['following'] = data['enemyDamage']
-      }
-      if (enemy[data['enemyId']]['health'] > 0) {
-        // enemy[data['enemyId']]['enemy'].anims.play('undeadWalk', true)
-      }
-      if (data['enemyDamage'] === -1) {
-        // enemy[data['enemyId']]['enemy'].anims.play('undeadIdle', true)
-        enemy[data['enemyId']]['following'] = 0
-      }
-      if (enemy[data['enemyId']]['heath'] <= 0) {
-        // enemy[data['enemyId']]['enemy'].anims.play('undeadDeath', true);
-      }
-    }
-    if (data['actionName'] === 'create' && data['char'] === currentCharacter) { // NO ENEMIES
-      databaseEnemy(data['x'], data['y'], data['enemyDamage'])
-    }
-    if (data['actionName'] === 'create') {
-      createEnemy(data['x'], data['y'], data['enemyDamage'])
-    }
-    if (data['actionName'] === 'login' && data['char'] === currentCharacter) { // LOGIN
-      createEnemy(data['x'], data['y'], data['enemyDamage'], data['enemyId'], data['health']) // x y enemyId, enemyType
+    else if (data['type'] === 'character') {
+      playerDetails[ data['char'] ] = {'xPos': data['x'], 'yPos': data['y'], 'direction': data['direction'], name: data['name'], health: data['health']}
     }
     function createEnemy(x, y, enemyType, localEnemyId, health) {
       if (localEnemyId) {
@@ -96,15 +93,9 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
           enemyCollide[this.id][1] += 1
           if (cursors.space.isDown) {
             if (!spacePressed) {
-              console.log("RUN")
               enemyDamage = 10
               damage(this.id, enemyDamage)
               spacePressed = true
-              enemy[this.id]['pause'] = true;
-              test = this.id
-              window.setTimeout(function() {
-                enemy[test]['pause'] = false
-              }, 1000)
             }
           } else if(cursors.space.isUp) {
             spacePressed = false;
@@ -117,8 +108,7 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
       }
     }
   },
-  create: function(enemyId, enemyDamage, x, y, actionName, currentCharacter){
-    // console.log(enemyId, enemyDamage, x, y)
-    this.perform('create', {enemyId, enemyDamage, x, y, actionName, currentCharacter});
+  create: function(type, a){
+    this.perform('create', {type, a});
   }
 })

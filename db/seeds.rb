@@ -9,3 +9,7 @@
 Enemy.destroy_all
 
 Enemy.create total:0
+Enemy.create total:1, health:100, x:95, y:660
+Enemy.create total:2, health:100, x:95, y:935
+Enemy.create total:3, health:100, x:720, y:660
+Enemy.create total:4, health:100, x:720, y:935

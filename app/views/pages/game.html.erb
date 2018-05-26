@@ -211,35 +211,18 @@ body {
       deathTextBelow = gameEdit.add.text(0, 0, "", {fontSize: '50px', fill: '#FFF'});
       healthBarBack = this.add.image(200, 200, 'healthBarBack')
       healthBar = this.add.image(200, 200, 'healthBar')
-      aliveEnemy['undead1'] = 0
-      aliveEnemy['undead2'] = 0
-      aliveEnemy['undead3'] = 0
-      aliveEnemy['undead4'] = 0
       let enemyObject = <%= Enemy.all.to_json.html_safe %>
       for (let key in enemyObject) {
-        for (let i = 1; i <= enemies; i++) {
-          if (enemyObject[key]['total'] === i) {
-            aliveEnemy[`undead${i}`] += 1
-            aliveEnemyId = enemyObject[key]['id']
-            aliveEnemyX = enemyObject[key]['x']
-            aliveEnemyY = enemyObject[key]['y']
-            console.log("loading enemy with" + aliveEnemyId)
-            App.enemy.create(aliveEnemyId, i, aliveEnemyX, aliveEnemyY, 'login', currentCharacter)
-            enemyId -= 1
-          }
-        }
-      }
-      for (let i = 1; i <= enemies; i++) {
-        if (aliveEnemy[`undead${i}`] === 0) {
-          console.log("Creating undead1 with id" + enemyId)
-          aliveEnemy[`undead${i}`] += 1
-          App.enemy.create(enemyId, i, 0, 0, 'create', currentCharacter)
+        if (enemyObject[key]['total'] !== 0) {
+          console.log("loading enemy with" + enemyObject[key]['id'])
+          App.general.create('login', {'enemyId': enemyObject[key]['id'], 'enemyType': enemyObject[key]['total'], 'x': enemyObject[key]['x'], 'y': enemyObject[key]['y'], 'char': currentCharacter})
+          enemyId -= 1
         }
       }
       gameEdit.input.keyboard.addKeys(
         { 'e': Phaser.Input.Keyboard.KeyCodes.E,
-          's': Phaser.Input.Keyboard.KeyCodes.S });
-
+          's': Phaser.Input.Keyboard.KeyCodes.S }
+      );
     }
     function update() {
       // Things that will happen after game initially loads
@@ -293,7 +276,7 @@ body {
       healthBar.y = player.y - 36
 
       if (xPos !== xPosTemp || yPos !== yPosTemp || direction !== directionTemp || health !== healthTemp) {
-        App.item.create(gold, currentCharacter, xPos, yPos, direction, health)
+        App.general.create('character', {gold, 'char': currentCharacter, 'x': xPos, 'y': yPos, direction, health})
         xPosTemp = xPos
         yPosTemp = yPos
         directionTemp = direction
@@ -350,107 +333,96 @@ body {
         let followingY
         let goingBackX
         let goingBackY
-        if (enemy[key]['pause'] === true) {
-          enemy[key]['enemy'].setVelocityX(0)
-          enemy[key]['enemy'].setVelocityX(0)
-          if (enemy[key]['health'] <= 0) {
-            enemy[key]['enemy'].anims.play('undeadDeath', true)
-          } else {
-            enemy[key]['enemy'].anims.play('undeadDamage', true)
+        if (enemy[key]['following'] === 0 || enemy[key]['following'] === currentCharacter) {
+          if (enemy[key]['enemy'].x - player.x < 200 && enemy[key]['enemy'].x - player.x > 0 &&
+             (enemy[key]['enemy'].y - player.y < 200 && enemy[key]['enemy'].y - player.y > 0 ||
+             player.y - enemy[key]['enemy'].y < 200 && player.y - enemy[key]['enemy'].y > 0) && enemy[key]['health'] > 0){
+            enemy[key]['enemy'].setVelocityX(((enemy[key]['enemy'].x - player.x)/2.2)*-1)
+            followingX = true
+            enemy[key]['enemy'].flipX = true;
+            // console.log("LEFT")
           }
-        }
-        else {
-          if (enemy[key]['following'] === 0 || enemy[key]['following'] === currentCharacter) {
-            if (enemy[key]['enemy'].x - player.x < 200 && enemy[key]['enemy'].x - player.x > 0 &&
-               (enemy[key]['enemy'].y - player.y < 200 && enemy[key]['enemy'].y - player.y > 0 ||
-               player.y - enemy[key]['enemy'].y < 200 && player.y - enemy[key]['enemy'].y > 0) && enemy[key]['health'] > 0){
-              enemy[key]['enemy'].setVelocityX(((enemy[key]['enemy'].x - player.x)/2.2)*-1)
-              followingX = true
-              enemy[key]['enemy'].flipX = true;
-              // console.log("LEFT")
-            }
-            else if (player.x - enemy[key]['enemy'].x < 200 && player.x - enemy[key]['enemy'].x > 0 &&
-            (enemy[key]['enemy'].y - player.y < 200 && enemy[key]['enemy'].y - player.y > 0 ||
-            player.y - enemy[key]['enemy'].y < 200 && player.y - enemy[key]['enemy'].y > 0) && enemy[key]['health'] > 0) {
-              enemy[key]['enemy'].setVelocityX((player.x - enemy[key]['enemy'].x)/2.2)
-              followingX = true
-              enemy[key]['enemy'].flipX = false;
-              // console.log("RIGHT")
-            }
-            else {
-              enemy[key]['enemy'].setVelocityX(0)
-              followingX = false
-              if (enemy[key]['enemy'].x > enemy[key]['position']['startX'] + 5 && enemy[key]['health'] > 0) {
-                enemy[key]['enemy'].setVelocityX(-75)
-                goingBackX = true
-                enemy[key]['enemy'].flipX = true;
-              } else if (enemy[key]['enemy'].x < enemy[key]['position']['startX'] - 5 && enemy[key]['health'] > 0) {
-                enemy[key]['enemy'].setVelocityX(75)
-                goingBackX = true
-                enemy[key]['enemy'].flipX = false;
-
-              }
-              else {
-                // console.log("S", key)
-                enemy[key]['enemy'].setVelocityX(0)
-                goingBackX = false
-                if (enemy[key]['health'] > 0)
-                enemy[key]['enemy'].flipX = false;
-              }
-            }
-            if (enemy[key]['enemy'].y - player.y < 200 && enemy[key]['enemy'].y - player.y > 0 &&
-               (player.x - enemy[key]['enemy'].x < 200 && player.x - enemy[key]['enemy'].x > 0 ||
-               enemy[key]['enemy'].x - player.x < 200 && enemy[key]['enemy'].x - player.x > 0) && enemy[key]['health'] > 0){
-              // console.log("UP")
-              enemy[key]['enemy'].setVelocityY(((enemy[key]['enemy'].y - player.y)/2.2)*-1)
-              followingY = true
-            }
-            else if (player.y - enemy[key]['enemy'].y < 200 && player.y - enemy[key]['enemy'].y > 0 &&
-               (enemy[key]['enemy'].x - player.x < 200 && enemy[key]['enemy'].x - player.x > 0 ||
-               player.x - enemy[key]['enemy'].x < 200 && player.x - enemy[key]['enemy'].x > 0) && enemy[key]['health'] > 0){
-              enemy[key]['enemy'].setVelocityY((player.y - enemy[key]['enemy'].y)/2.2)
-              followingY = true
-              // console.log("DOWN")
-            }
-            else {
-              enemy[key]['enemy'].setVelocityY(0)
-              followingY = false
-              if (enemy[key]['enemy'].y > enemy[key]['position']['startY'] + 5 && enemy[key]['health'] > 0) {
-                enemy[key]['enemy'].setVelocityY(-75)
-                goingBackY = true
-              } else if (enemy[key]['enemy'].y < enemy[key]['position']['startY'] - 5 && enemy[key]['health'] > 0) {
-                enemy[key]['enemy'].setVelocityY(75)
-                goingBackY = true
-              } else {
-                enemy[key]['enemy'].setVelocityY(0)
-                goingBackY = false
-              }
-            }
-            if (enemy[key]['enemy'].x - enemy[key]['position']['startX'] < 6 && enemy[key]['enemy'].x - enemy[key]['position']['startX'] > -6 && enemy[key]['enemy'].y - enemy[key]['position']['startY'] < 6 && enemy[key]['enemy'].y - enemy[key]['position']['startY'] > -6 && (goingBackY || goingBackX)) {
-              App.enemy.create(key, 0, 0, 0, 'enemyReset', currentCharacter)
-            }
-          }
-        }
-        if (!enemy[key]['pause']) {
-          if (enemy[key]['health'] <= 0) {
-            enemy[key]['enemy'].anims.play('undeadDeath', true);
-          }
-          else if (followingX || followingY || goingBackX || goingBackY) {
-            enemy[key]['enemy'].anims.play('undeadWalk', true)
+          else if (player.x - enemy[key]['enemy'].x < 200 && player.x - enemy[key]['enemy'].x > 0 &&
+          (enemy[key]['enemy'].y - player.y < 200 && enemy[key]['enemy'].y - player.y > 0 ||
+          player.y - enemy[key]['enemy'].y < 200 && player.y - enemy[key]['enemy'].y > 0) && enemy[key]['health'] > 0) {
+            enemy[key]['enemy'].setVelocityX((player.x - enemy[key]['enemy'].x)/2.2)
+            followingX = true
+            enemy[key]['enemy'].flipX = false;
+            // console.log("RIGHT")
           }
           else {
-            enemy[key]['enemy'].anims.play('undeadIdle', true)
+            enemy[key]['enemy'].setVelocityX(0)
+            followingX = false
+            if (enemy[key]['enemy'].x > enemy[key]['position']['startX'] + 5 && enemy[key]['health'] > 0) {
+              enemy[key]['enemy'].setVelocityX(-75)
+              goingBackX = true
+              enemy[key]['enemy'].flipX = true;
+            } else if (enemy[key]['enemy'].x < enemy[key]['position']['startX'] - 5 && enemy[key]['health'] > 0) {
+              enemy[key]['enemy'].setVelocityX(75)
+              goingBackX = true
+              enemy[key]['enemy'].flipX = false;
+
+            }
+            else {
+              // console.log("S", key)
+              enemy[key]['enemy'].setVelocityX(0)
+              goingBackX = false
+              if (enemy[key]['health'] > 0)
+              enemy[key]['enemy'].flipX = false;
+            }
           }
+          if (enemy[key]['enemy'].y - player.y < 200 && enemy[key]['enemy'].y - player.y > 0 &&
+             (player.x - enemy[key]['enemy'].x < 200 && player.x - enemy[key]['enemy'].x > 0 ||
+             enemy[key]['enemy'].x - player.x < 200 && enemy[key]['enemy'].x - player.x > 0) && enemy[key]['health'] > 0){
+            // console.log("UP")
+            enemy[key]['enemy'].setVelocityY(((enemy[key]['enemy'].y - player.y)/2.2)*-1)
+            followingY = true
+          }
+          else if (player.y - enemy[key]['enemy'].y < 200 && player.y - enemy[key]['enemy'].y > 0 &&
+             (enemy[key]['enemy'].x - player.x < 200 && enemy[key]['enemy'].x - player.x > 0 ||
+             player.x - enemy[key]['enemy'].x < 200 && player.x - enemy[key]['enemy'].x > 0) && enemy[key]['health'] > 0){
+            enemy[key]['enemy'].setVelocityY((player.y - enemy[key]['enemy'].y)/2.2)
+            followingY = true
+            // console.log("DOWN")
+          }
+          else {
+            enemy[key]['enemy'].setVelocityY(0)
+            followingY = false
+            if (enemy[key]['enemy'].y > enemy[key]['position']['startY'] + 5 && enemy[key]['health'] > 0) {
+              enemy[key]['enemy'].setVelocityY(-75)
+              goingBackY = true
+            } else if (enemy[key]['enemy'].y < enemy[key]['position']['startY'] - 5 && enemy[key]['health'] > 0) {
+              enemy[key]['enemy'].setVelocityY(75)
+              goingBackY = true
+            } else {
+              enemy[key]['enemy'].setVelocityY(0)
+              goingBackY = false
+            }
+          }
+          if (enemy[key]['enemy'].x - enemy[key]['position']['startX'] < 6 && enemy[key]['enemy'].x - enemy[key]['position']['startX'] > -6 && enemy[key]['enemy'].y - enemy[key]['position']['startY'] < 6 && enemy[key]['enemy'].y - enemy[key]['position']['startY'] > -6 && (goingBackY || goingBackX)) {
+            enemy[key]['health'] = 100
+            enemy[key]['healthBar'].setScale(enemy[key]['health']/100, 1)
+            App.general.create('enemyReset', {'enemyId': key, 'char': currentCharacter})
+          }
+        }
+        if (enemy[key]['health'] <= 0) {
+          enemy[key]['enemy'].anims.play('undeadDeath', true);
+        }
+        else if (followingX || followingY || goingBackX || goingBackY) {
+          enemy[key]['enemy'].anims.play('undeadWalk', true)
+        }
+        else {
+          enemy[key]['enemy'].anims.play('undeadIdle', true)
         }
         if (enemy[key]['position']['x'] !== enemy[key]['enemy'].x || enemy[key]['position']['y'] !== enemy[key]['enemy'].y) {
           if (followingY || followingX) {
             followingBoo[key] = true
-            App.enemy.create(key, currentCharacter, enemy[key]['enemy'].x, enemy[key]['enemy'].y, 'move', currentCharacter)
+            App.general.create('move', {'enemyId': key, 'x': enemy[key]['enemy'].x, 'y': enemy[key]['enemy'].y, 'char': currentCharacter})
           }
         }
         if (followingBoo[key] && !followingY && !followingX) {
           followingBoo[key] = false
-          App.enemy.create(key, -1, enemy[key]['enemy'].x, enemy[key]['enemy'].y, 'move', currentCharacter)
+          App.general.create('move', {'enemyId': key, 'x': enemy[key]['enemy'].x, 'y': enemy[key]['enemy'].y, 'char': currentCharacter})
         }
         enemy[key]['healthBarBack'].x = enemy[key]['enemy'].x
         enemy[key]['healthBarBack'].y = enemy[key]['enemy'].y - 36
@@ -540,7 +512,7 @@ body {
             quests[i+1]['upTo'] = true
             questIcons[i+1].setScale(1)
             gold += 10
-            App.enemy.create(gold, 0, 0, 0, 'gold', currentCharacter)
+            App.general.create('gold', {gold, char: currentCharacter})
           }
         }
         // Showing quest icon
@@ -614,15 +586,14 @@ body {
       quests[2][1] += 1
     }
     function damage(id, enemyDamage) {
-      App.enemy.create(id, enemyDamage, 0, 0, 'damage', currentCharacter)
+      App.general.create('damage', {'enemyId': id, 'damage': enemyDamage, 'char': currentCharacter})
     }
     function databaseEnemy(x, y, enemyType) {
       console.log("Creating database entry for "+enemyId)
-      App.enemy.create(enemyId, enemyType, x, y, 'database', currentCharacter)
+      App.general.create('database', {enemyId, enemyType, x, y, 'char': currentCharacter})
     }
     window.setInterval(function() {
-      App.item.create(gold, currentCharacter, xPos, yPos, direction, health)
-    }, 1000)
+        App.general.create('character', {gold, 'char': currentCharacter, 'x': xPos, 'y': yPos, direction, health})}, 1000)
 
 </script>
 
