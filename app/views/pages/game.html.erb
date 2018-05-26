@@ -272,7 +272,7 @@ body {
       healthBar.x = player.x - ((100-health)/4)
       healthBar.y = player.y - 36
 
-      if (x > xTemp+8 || x < xTemp-8 || y > yTemp+8 || y < yTemp-8 || direction !== directionTemp || health !== healthTemp) {
+      if (x > xTemp+3 || x < xTemp-3 || y > yTemp+3 || y < yTemp-3 || direction !== directionTemp || health !== healthTemp) {
         App.general.create('character', {gold, 'char': currentCharacter, 'x': x, 'y': y, direction, health})
         xTemp = x
         yTemp = y
