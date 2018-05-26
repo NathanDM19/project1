@@ -23,6 +23,10 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
         }
       }
     }
+    if (data['actionName'] === 'enemyReset') {
+      enemy[data['enemyId']]['health'] = 100
+      enemy[data['enemyId']]['healthBar'].setScale(enemy[data['enemyId']]['health']/100, 1)
+    }
     if (data['actionName'] === 'move') {
       if (data['enemyDamage'] !== currentCharacter) {
         enemy[data['enemyId']]['position']['x'] = data['x']
@@ -111,9 +115,6 @@ App.enemy = App.cable.subscriptions.create('EnemyChannel', {
         gameEdit.physics.add.collider(enemy[id]['enemy'], platforms)
         enemyId += 1
       }
-      // else {
-      //   enemyId += 1
-      // }
     }
   },
   create: function(enemyId, enemyDamage, x, y, actionName, currentCharacter){

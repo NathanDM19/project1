@@ -427,8 +427,7 @@ body {
               }
             }
             if (enemy[key]['enemy'].x - enemy[key]['position']['startX'] < 6 && enemy[key]['enemy'].x - enemy[key]['position']['startX'] > -6 && enemy[key]['enemy'].y - enemy[key]['position']['startY'] < 6 && enemy[key]['enemy'].y - enemy[key]['position']['startY'] > -6 && (goingBackY || goingBackX)) {
-              console.log(enemy[key]['health'])
-              damage(key, -100+enemy[key]['health'])
+              App.enemy.create(key, 0, 0, 0, 'enemyReset', currentCharacter)
             }
           }
         }

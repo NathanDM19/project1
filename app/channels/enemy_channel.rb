@@ -17,6 +17,11 @@ class EnemyChannel < ApplicationCable::Channel
       # a.health = 100
       # a.total = 1
       # a.save
+    elsif data['actionName'] == 'enemyReset'
+      a = Enemy.find data['enemyId']
+      a.health = 100
+      a.save
+      ActionCable.server.broadcast 'enemy_channel', enemyId: data['enemyId'], actionName: 'health'
     elsif data['actionName'] == 'gold'
       a = Character.find data['currentCharacter']
       a.gold = data['enemyId']
