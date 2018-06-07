@@ -54,7 +54,6 @@ body {
     let gold = <%= @current_character.gold %>
     // Quest variables
     let quests = {}
-    let totalQuests = 2
     // Enemy damage
     let enemyCollide = {}
     function preload() {
@@ -110,7 +109,7 @@ body {
       questIcons = {
         1: quest1.create(460, 420, 'questIcon'),
         2: quest2.create(460, 480, 'questIcon'),
-        3: quest3.create(-500, -500, 'questIcon')
+        3: quest3.create(355, 480, 'questIcon')
       }
       goldText = gameEdit.add.text(0, 0, "", { fontSize: '25px', fill: '#FFF' })
       quests[1] = {
@@ -120,12 +119,12 @@ body {
         'active': false,
         'total': 0,
         'completed': false,
-        'upTo': true
+        'upTo': false
       }
       quests[2] = {
         1: 0,
         2: 0,
-        'hoverText': gameEdit.add.text(310, 360, "", {fontSize: '25px', fill: '#FFF'}),
+        'hoverText': gameEdit.add.text(310, 420, "", {fontSize: '25px', fill: '#FFF'}),
         'active': false,
         'total': 0,
         'completed': false,
@@ -134,27 +133,21 @@ body {
       quests[3] = {
         1: 0,
         2: 0,
-        'hoverText': gameEdit.add.text(310, 360, "", {fontSize: '25px', fill: '#FFF'}),
+        'hoverText': gameEdit.add.text(205, 420, "", {fontSize: '25px', fill: '#FFF'}),
         'active': false,
         'total': 0,
         'completed': false,
-        'upTo': false
+        'upTo': true
       }
-      // quests[1]['hoverText'] = gameEdit.add.text(310, 360, "", { fontSize: '25px', fill: '#FFF' });
-      // quests[1]['active'] = false;
-      // quests[1]['quest'] = function() {
-      //   quests[1]['activeText'] = gameEdit.add.text(0, 0, "Kill 10 undead enemies", {fontSize: '20px', fill: '#FFF'} )
-      // }
 
       //Making a platforms class to add platforms.create(x, y, name)
       player = this.physics.add.sprite(400, 490, 'player');  //.setScrollFactor(0);
       player.body.setSize(24, 42)
-      // enemy = this.physics.add.sprite(100, 700, 'undead') //DEFAULT is 3. WALK 5-12 ISH
-      //Adding collision to end of screen
       // Collision between player and platforms
       this.physics.add.collider(player, platforms);
       this.physics.add.overlap(player, quest1, quest1Touch, null, this);
       this.physics.add.overlap(player, quest2, quest2Touch, null, this);
+      this.physics.add.overlap(player, quest3, quest3Touch, null, this);
       // Animation for sprite
       this.anims.create({
           key: 'left',
@@ -452,47 +445,63 @@ body {
       }
       // QUESTS
       // Makes quest information follow player
-      for (let i = 1; i <= totalQuests; i++) {
-        if (quests[i]['active']) {
-          if (quests[i]['total'] < 10) {
-            quests[i]['activeText'].x = player.x + 380
-            quests[i]['activeText'].y = player.y - 380
-          } else {
-            quests[i]['activeText'].x = player.x + 240
-            quests[i]['activeText'].y = player.y - 380
+      for (let key in quests) {
+        quests[key]
+        if (quests[key]['active']) {  // Showing quest information when quest is active
+          if (key === "1") {
+            if (quests[key]['total'] < 10) {
+              quests[key]['activeText'].x = player.x + 380
+              quests[key]['activeText'].y = player.y - 380
+            } else {
+              quests[key]['activeText'].x = player.x + 240
+              quests[key]['activeText'].y = player.y - 380
+            }
+          } else if (key === "2") {
+            if (quests[key]['total'] < 10) {
+              quests[key]['activeText'].x = player.x + 450
+              quests[key]['activeText'].y = player.y - 380
+            } else {
+              quests[key]['activeText'].x = player.x + 310
+              quests[key]['activeText'].y = player.y - 380
+            }
+          } else if (key === "3") {
+            quests[key]['activeText'].x = player.x + 315
+            quests[key]['activeText'].y = player.y - 380
           }
         }
-        if (quests[i][1] !== quests[i][2]) {
+        if (quests[key][1] !== quests[key][2]) { // When a player walks over the quest icon
           // If player hasnt done quest yet show this
-          if (quests[i]['active'] === false && quests[i]['completed'] === false && quests[i]['upTo'] === true) {
-            quests[i]['hoverText'].setText("Press E to start quest")
+          if (quests[key]['active'] === false && quests[key]['completed'] === false && quests[key]['upTo'] === true) {
+            quests[key]['hoverText'].setText("Press E to start quest")
             // If player is in quest and has finished show this
-          } else if (quests[i]['active'] && quests[i]['total'] === 10 && quests[i]['upTo'] === true) {
-            quests[i]['hoverText'].setText("Press E to hand in quest")
+          } else if (quests[key]['active'] && quests[key]['total'] === 10 && quests[key]['upTo'] === true) {
+            quests[key]['hoverText'].setText("Press E to hand in quest")
+          } else if (quests[key]['active'] && key === "3") {
+            quests[key]['hoverText'].setText("Press E to hand in quest")
           }
-          quests[i][2] = quests[i][1];
-          quests[i][3] = true;
-        }
-        else if (quests[i]['active'] && quests[i]['total'] !== 10) {
-          quests[i]['hoverText'].setText("")
-          quests[i][3] = false;
+          quests[key][2] = quests[key][1];
+          quests[key][3] = true;
+        } // When the quest is active but the user hasn't finished the quest yet.
+        else if (quests[key]['active'] && quests[key]['total'] !== 10) {
+          quests[key]['hoverText'].setText("")
+          quests[key][3] = false;
         }
         else {
-          quests[i]['hoverText'].setText("")
-          quests[i][3] = false;
+          quests[key]['hoverText'].setText("")
+          quests[key][3] = false;
         }
         // User is over quest icon and e is pressed
-        if (quests[i][3] && gameEdit.input.keyboard.keys[69].isDown) {
+        if (quests[key][3] && gameEdit.input.keyboard.keys[69].isDown) {
           // Quest isnt active and quest hasnt been done
-          if (!quests[i]['active'] && !quests[i]['completed'] && quests[i]['upTo']) {
-            quests[i]['active'] = true;
-            quests[i]['hoverText'].setText("")
+          if (!quests[key]['active'] && !quests[key]['completed'] && quests[key]['upTo']) {
+            quests[key]['active'] = true;
+            quests[key]['hoverText'].setText("")
             // QUEST 1
-            if (i === 1) {
-              quests[i]['activeText'] = gameEdit.add.text(0, 0, "Kill 10 undead enemies: 0/10", {fontSize: '20px', fill: '#FFF'})
+            if (key === '1') {
+              quests[key]['activeText'] = gameEdit.add.text(0, 0, "Kill 10 undead enemies: 0/10", {fontSize: '20px', fill: '#FFF'})
             // QUEST 2
-            } else if (i === 2 ) {
-              quests[i]['activeText'] = gameEdit.add.text(0, 0, "Collect 10 stars: 0/10", {fontSize: '20px', fill: '#FFF'})
+            } else if (key === '2' ) {
+              quests[key]['activeText'] = gameEdit.add.text(0, 0, "Collect 10 stars: 0/10", {fontSize: '20px', fill: '#FFF'})
               q2stars = {}
               for (let i = 0; i < 10; i++) {
                 q2stars[i] = {}
@@ -506,29 +515,32 @@ body {
                 }
                 q2stars[i]['star'] = stars.create((Math.random()*850)+50, (Math.random()*800)+200, 'star').setScale(0.3).refreshBody();
                 gameEdit.physics.add.overlap(player, q2stars[i]['star'], q2stars[i]['f'], null, this);
-                // 50x 900 200y 1000
               }
+              // QUEST 3
+            } else if (key === '3') {
+              quests[key]['activeText'] = gameEdit.add.text(0, 0, "Head down south to the Quest Icon", {fontSize: '20px', fill: '#FFF'});
+              questIcons[3].y = 900;
             }
-            // QUEST 3
+
             // Quest is active and quest is complete
-          } else if (quests[i]['active'] && quests[i]['total'] === 10) {
-            quests[i]['active'] = false;
-            quests[i]['completed'] = true;
-            quests[i]['activeText'].setText("")
-            quests[i]['hoverText'].setText("")
-            questIcons[i].disableBody(true, true)
-            quests[i]['upTo'] = false
-            quests[i+1]['upTo'] = true
-            questIcons[i+1].setScale(1)
+          } else if (quests[key]['active'] && quests[key]['total'] === 10) {
+            quests[key]['active'] = false;
+            quests[key]['completed'] = true;
+            quests[key]['activeText'].setText("")
+            quests[key]['hoverText'].setText("")
+            questIcons[key].disableBody(true, true)
+            quests[key]['upTo'] = false
+            quests[parseInt(key)+1]['upTo'] = true
+            questIcons[parseInt(key)+1].setScale(1)
             gold += 10
             App.general.create('gold', {gold, char: currentCharacter})
           }
         }
         // Showing quest icon
-        if (!quests[i]['completed'] && quests[i]['upTo']) {
-          questIcons[i].setScale(1)
+        if (!quests[key]['completed'] && quests[key]['upTo']) {
+          questIcons[key].setScale(1)
         } else {
-          questIcons[i].setScale(0)
+          questIcons[key].setScale(0)
         }
       }
       // If player is over quest icon
@@ -578,6 +590,9 @@ body {
     }
     function quest2Touch() {
       quests[2][1] += 1
+    }
+    function quest3Touch() {
+      quests[3][1] += 1
     }
     function damage(id, enemyDamage) {
       App.general.create('damage', {'enemyId': id, 'damage': enemyDamage, 'char': currentCharacter})
